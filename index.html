@@ -1,0 +1,1053 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Crochet Project Book</title>
+<meta name="description" content="Track crochet projects and yarn, find free patterns by technique, and turn a photo into a colorwork chart.">
+<meta name="theme-color" content="#16131a">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ccircle cx='30' cy='34' r='22' fill='%23b0365f'/%3E%3Cpath d='M10 28q18-10 38 4M9 38q20-12 40 3M22 13q-8 18 4 40M37 12q11 19 2 40' fill='none' stroke='%23f6dce3' stroke-width='3'/%3E%3Cpath d='M46 6l10 50' stroke='%232a2230' stroke-width='5' stroke-linecap='round'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Figtree:wght@400;500;600;700&family=JetBrains+Mono:wght@500&display=swap">
+<style>
+/* Layout: one column of project cards with a sticky tab bar; a slide-up sheet edits one project. */
+:root{
+  --bg:#f5f3f7; --surface:#ffffff; --sunk:#ece8f0; --ink:#26202d; --muted:#6a6175; --line:#ddd6e4;
+  --accent:#17706a; --accent-ink:#ffffff; --berry:#b0365f; --ok:#3b7f45; --warn:#a2650c;
+  --display:"Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
+  --body:"Figtree", "Segoe UI", system-ui, sans-serif;
+  --mono:"JetBrains Mono", ui-monospace, Consolas, monospace;
+  --r:12px; --rose-ring:#e8b3c2;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#16131a; --surface:#211d27; --sunk:#2a2531; --ink:#efeaf4; --muted:#a69db1; --line:#363040;
+  --accent:#4cb3ab; --accent-ink:#0f1f1e; --berry:#e57b9f; --ok:#79c483; --warn:#e3a54d; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#16131a; --surface:#211d27; --sunk:#2a2531; --ink:#efeaf4; --muted:#a69db1; --line:#363040;
+  --accent:#4cb3ab; --accent-ink:#0f1f1e; --berry:#e57b9f; --ok:#79c483; --warn:#e3a54d; color-scheme:dark}
+*{box-sizing:border-box}
+:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);color-scheme:light}
+img{max-width:100%}
+[hidden]{display:none!important}
+.pat-img{max-width:220px;border-radius:10px;border:1px solid var(--line);display:block}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.5}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--bg)}
+.wrap{max-width:980px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:20px 60px}
+header.top{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;flex-wrap:wrap}
+h1{font-family:var(--display);font-weight:800;font-size:clamp(26px,5vw,36px);line-height:1.05;margin:0;letter-spacing:-.01em;text-wrap:balance}
+h1 small{display:block;font-family:var(--body);font-weight:500;font-size:14px;color:var(--muted);letter-spacing:0;margin-top:6px}
+h2{font-family:var(--display);font-weight:600;font-size:20px;margin:0}
+.brand{display:flex;align-items:center;gap:14px;min-width:0}
+.logo{flex:none;width:64px;height:64px;border-radius:50%;object-fit:cover;box-shadow:0 0 0 3px var(--bg),0 0 0 5px var(--rose-ring)}
+@media (max-width:480px){.logo{width:52px;height:52px}}
+h3{font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin:0 0 8px;font-weight:700}
+.tabs{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);display:flex;gap:4px;margin:16px 0 18px;padding:6px 0;border-bottom:1px solid var(--line);overflow-x:auto}
+.tabs button{flex:0 0 auto;border:0;background:none;color:var(--muted);font:600 15px var(--body);padding:8px 12px;border-radius:999px;cursor:pointer}
+.tabs button[aria-selected="true"]{background:var(--ink);color:var(--bg)}
+.tabs .count{font-family:var(--mono);font-size:12px;opacity:.75;margin-left:4px}
+button,input,select,textarea{font:inherit;color:inherit}
+.btn{border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:8px 14px;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:6px;text-decoration:none;color:var(--ink);font-size:14px}
+.btn:hover{border-color:var(--muted)}
+.btn.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.btn.danger{color:var(--berry)}
+.btn.danger.armed{background:var(--berry);color:#fff;border-color:var(--berry)}
+.btn.small{padding:5px 10px;font-size:13px}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.spread{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.chips{display:flex;gap:6px;flex-wrap:wrap}
+.chip{border:1px solid var(--line);background:none;border-radius:999px;padding:5px 11px;font-size:13px;font-weight:600;cursor:pointer;color:var(--muted)}
+.chip[aria-pressed="true"]{border-color:var(--accent);color:var(--accent);background:color-mix(in srgb,var(--accent) 10%,transparent)}
+.note{background:var(--sunk);border-radius:var(--r);padding:10px 14px;font-size:14px;color:var(--muted);margin-bottom:14px}
+.note b{color:var(--ink)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px;margin-top:14px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);overflow:hidden;cursor:pointer;text-align:left;padding:0;display:flex;flex-direction:column;min-width:0}
+.card:hover{border-color:var(--muted)}
+.strip{display:flex;height:10px}
+.card .cover{position:relative;height:100px;overflow:hidden;background:var(--sunk)}
+.card .cover svg,.card .cover img{width:100%;height:100%;display:block;object-fit:cover}
+.strip span{flex:1}
+.strip.empty{background:repeating-linear-gradient(45deg,var(--sunk) 0 6px,var(--line) 6px 12px)}
+.card .body{padding:12px 14px 14px;display:grid;gap:6px;min-width:0}
+.card .name{font-family:var(--display);font-weight:600;font-size:18px;line-height:1.2;overflow-wrap:anywhere}
+.meta{font-size:13px;color:var(--muted);display:flex;gap:6px 12px;flex-wrap:wrap}
+.mono{font-family:var(--mono);font-variant-numeric:tabular-nums}
+.pill{display:inline-block;font-size:12px;font-weight:700;padding:2px 9px;border-radius:999px;border:1px solid currentColor}
+.pill.wishlist{color:var(--muted)} .pill.active{color:var(--accent)} .pill.done{color:var(--ok)}
+.pill.example{color:var(--warn)}
+.pill.plat{color:var(--berry)}
+.bar{height:6px;background:var(--sunk);border-radius:99px;overflow:hidden}
+.bar i{display:block;height:100%;background:var(--accent)}
+.empty-state{border:1.5px dashed var(--line);border-radius:var(--r);padding:28px 18px;text-align:center;color:var(--muted);margin-top:14px}
+.empty-state h2{color:var(--ink);margin-bottom:6px}
+/* list tables */
+.list{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);margin-top:14px}
+.li{display:grid;grid-template-columns:34px 1fr auto;gap:12px;align-items:center;padding:12px 14px;border-top:1px solid var(--line)}
+.li:first-child{border-top:0}
+.sw{width:34px;height:34px;border-radius:50%;border:1px solid var(--line);background-image:radial-gradient(circle at 35% 30%,rgba(255,255,255,.35),transparent 55%)}
+.li .t{font-weight:600;overflow-wrap:anywhere}
+.qty{display:flex;align-items:center;gap:6px}
+.qty button{width:30px;height:30px;border-radius:50%;border:1px solid var(--line);background:var(--surface);cursor:pointer;font-weight:700}
+.buy{font-family:var(--mono);font-weight:500;font-size:15px;text-align:right}
+.buy b{color:var(--berry)}
+.buy .okk{color:var(--ok)}
+/* find */
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:16px;margin-top:14px;display:grid;gap:12px}
+.search-links{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px}
+.search-links a{display:block;border:1px solid var(--line);border-radius:10px;padding:10px 12px;text-decoration:none;color:var(--ink);font-weight:600}
+.search-links a small{display:block;color:var(--muted);font-weight:400;font-size:12px}
+.search-links a:hover{border-color:var(--accent)}
+.sites{display:grid;gap:0}
+.site{display:grid;grid-template-columns:1fr auto;gap:10px;align-items:center;padding:10px 0;border-top:1px solid var(--line)}
+.site:first-child{border-top:0}
+.site a{color:var(--accent);font-weight:600}
+.site p{margin:2px 0 0;font-size:13px;color:var(--muted)}
+input[type=text],input[type=url],input[type=number],select,textarea{width:100%;border:1px solid var(--line);background:var(--bg);border-radius:9px;padding:9px 11px;min-width:0}
+textarea{min-height:90px;resize:vertical}
+label.f{display:grid;gap:4px;font-size:13px;font-weight:600;color:var(--muted);min-width:0}
+.fields{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px}
+/* sheet */
+.scrim{position:fixed;inset:0;background:rgba(10,6,14,.45);z-index:20;display:flex;justify-content:center;align-items:flex-end}
+.sheet{background:var(--surface);width:100%;max-width:760px;max-height:calc(100% - 24px - env(safe-area-inset-top,0px));overflow-y:auto;border-radius:18px 18px 0 0;padding:0 max(16px,env(safe-area-inset-right,0px)) calc(24px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px))}
+@media (min-width:800px){.scrim{align-items:center}.sheet{border-radius:18px;max-height:90%}}
+.sheet-head{position:sticky;top:0;background:var(--surface);z-index:2;display:flex;justify-content:space-between;align-items:center;gap:10px;padding:14px 0 12px;border-bottom:1px solid var(--line)}
+.sec{padding:16px 0;border-bottom:1px solid var(--line);display:grid;gap:10px}
+.sec:last-child{border-bottom:0}
+.yarn{display:grid;grid-template-columns:44px 1fr;gap:10px;background:var(--bg);border-radius:10px;padding:10px}
+.yarn input[type=color]{width:44px;height:44px;border:0;padding:0;background:none;border-radius:50%;cursor:pointer}
+.counter{display:grid;grid-template-columns:64px 1fr 64px;gap:10px;align-items:center;text-align:center}
+.counter button{height:64px;border-radius:16px;border:1px solid var(--line);background:var(--bg);font-size:28px;font-weight:700;cursor:pointer}
+.counter button.plus{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.counter .num{font-family:var(--mono);font-size:44px;line-height:1}
+.counter .of{font-size:13px;color:var(--muted)}
+.photos{display:flex;gap:8px;flex-wrap:wrap}
+.photo{position:relative;width:96px;height:96px;border-radius:10px;overflow:hidden;background:var(--sunk)}
+.photo img{width:100%;height:100%;object-fit:cover}
+.photo button{position:absolute;top:4px;right:4px;border:0;border-radius:50%;width:24px;height:24px;background:rgba(0,0,0,.6);color:#fff;cursor:pointer}
+.link-out{display:flex;gap:8px;align-items:center;flex-wrap:wrap;font-size:13px}
+.link-out a{color:var(--accent);font-weight:600;overflow-wrap:anywhere}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(20px + env(safe-area-inset-bottom,0px));background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:999px;font-weight:600;z-index:40;font-size:14px}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+/* survey + picture tiles */
+.eyebrow{font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--accent)}
+.wiz{display:grid;gap:12px;min-width:0}
+.wiz>*,#chartArea>*{min-width:0}
+.wiz-top{display:flex;justify-content:space-between;align-items:center;gap:10px;min-height:34px}
+.steps{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.steps i{height:5px;border-radius:9px;background:var(--line);transition:background .3s}
+.steps i.on{background:var(--accent)}
+.q{font-family:var(--display);font-weight:800;font-size:clamp(24px,4.5vw,32px);line-height:1.1;text-wrap:balance;margin:6px 0 0}
+.sub{margin:0}
+.linkbtn{border:0;background:none;padding:0;color:var(--accent);font-weight:600;cursor:pointer;text-decoration:underline;text-underline-offset:2px;font-size:13px}
+.kw{display:grid;grid-template-columns:1fr auto;gap:10px;align-items:end}
+@media (max-width:520px){.kw{grid-template-columns:1fr}}
+.tiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px}
+.tile{position:relative;display:block;aspect-ratio:4/3;max-width:100%;border:0;padding:0;border-radius:14px;overflow:hidden;cursor:pointer;text-align:left;background:var(--sunk);color:#fff;text-decoration:none;isolation:isolate}
+.tile .art{position:absolute;inset:0}
+.tile .art svg{width:100%;height:100%;display:block;transition:transform .35s ease}
+.tile:hover .art svg,.tile:focus-visible .art svg{transform:scale(1.06)}
+.tile .cap{position:absolute;inset:auto 0 0;padding:30px 12px 10px;display:grid;gap:1px;background:linear-gradient(to top,rgba(14,9,18,.88) 35%,rgba(14,9,18,0))}
+.tile .cap b{font:600 16px/1.2 var(--display)}
+.tile .cap small{font-size:12px;line-height:1.3;opacity:.9;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.tile .tick,.tile .go{position:absolute;top:8px;right:8px;width:26px;height:26px;border-radius:50%;display:grid;place-items:center;font-weight:800;font-size:14px}
+.tile .tick{background:var(--accent);color:var(--accent-ink);opacity:0;transform:scale(.6);transition:opacity .2s,transform .2s}
+.tile[aria-pressed="true"]{outline:3px solid var(--accent);outline-offset:2px}
+.tile[aria-pressed="true"] .tick{opacity:1;transform:none}
+.tile .go{background:rgba(14,9,18,.55);color:#fff}
+.tiles.sm{grid-template-columns:repeat(auto-fill,minmax(104px,1fr));gap:8px}
+.tiles.sm .tile{aspect-ratio:1/1;border-radius:12px}
+.tiles.sm .cap{padding:20px 8px 7px}
+.tiles.sm .cap b{font-size:13px}
+@media (prefers-reduced-motion:reduce){.tile .art svg{transition:none}.tile:hover .art svg{transform:none}}
+/* make a pattern */
+.drop{position:relative;display:block;aspect-ratio:16/7;min-height:180px;max-width:100%;border-radius:16px;overflow:hidden;cursor:pointer;color:#fff;isolation:isolate}
+.drop .art{position:absolute;inset:0;opacity:.9}.drop .art svg{width:100%;height:100%;display:block}
+.drop::after{content:"";position:absolute;inset:10px;border:2px dashed rgba(255,255,255,.8);border-radius:10px;pointer-events:none}
+.drop.over::after{border-style:solid;border-width:3px}
+.drop-cap{position:absolute;inset:0;display:grid;place-content:center;text-align:center;gap:4px;background:rgba(14,9,18,.45)}
+.drop-cap b{font:800 clamp(20px,4vw,28px)/1.1 var(--display)}.drop-cap small{font-size:14px;opacity:.9}
+.tips{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px}
+.tips div{background:var(--sunk);border-radius:12px;padding:12px 14px;display:grid;gap:2px;font-size:14px}
+.tips span{color:var(--muted)}
+.photo-bar{display:flex;align-items:center;gap:12px;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:8px 12px 8px 8px;flex-wrap:wrap}
+.photo-bar img{width:56px;height:56px;object-fit:cover;border-radius:8px}
+.photo-bar>div{flex:1;min-width:120px}
+.tag{display:inline-block;margin-left:6px;font-size:11px;letter-spacing:.02em;text-transform:none;padding:2px 8px;border-radius:99px;border:1px solid currentColor;vertical-align:middle}
+.tag.ok{color:var(--ok)}.tag.warn{color:var(--warn)}
+input[type=range]{width:100%;accent-color:var(--accent);padding:0;border:0;background:none}
+.check{display:flex;gap:8px;align-items:center;font-size:14px;cursor:pointer}
+.check input{width:18px;height:18px;accent-color:var(--accent)}
+.chart-wrap{overflow:auto;border:1px solid var(--line);border-radius:12px;background:var(--surface);padding:8px;max-height:72vh;margin-top:14px}
+.chart-wrap canvas{display:block}
+.spec{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin:14px 0 6px}
+.spec>div{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:10px 12px;display:grid;gap:2px;min-width:0}
+.spec b{font-size:17px}
+details.instr{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px 14px;margin:14px 0}
+details.instr summary{cursor:pointer;font-weight:700}
+ol.rows{margin:10px 0 0;padding-left:0;list-style:none;font-family:var(--mono);font-size:13px;display:grid;gap:4px;max-height:420px;overflow:auto}
+ol.rows li{padding:4px 0;border-top:1px solid var(--line)}
+.draft-banner{background:color-mix(in srgb,var(--warn) 14%,var(--surface));border:1px solid color-mix(in srgb,var(--warn) 40%,transparent);border-radius:12px;padding:12px 14px;font-size:14px}
+.steps-list{list-style:none;padding:0;margin:0;display:grid;gap:6px}
+.steps-list li{padding:10px 12px;border-radius:10px;background:var(--bg);display:grid;gap:4px}
+.steps-list li.bad{background:color-mix(in srgb,var(--warn) 14%,var(--bg))}
+.st-head{display:flex;gap:8px;align-items:baseline;flex-wrap:wrap}
+.st-head .cnt{color:var(--muted)}
+.st-flag{font-weight:800}.good .st-flag{color:var(--ok)}.bad .st-flag{color:var(--warn)}
+.st-head .linkbtn{margin-left:auto}
+.issue{color:var(--warn);font-size:13px;font-weight:600}
+.fix{display:grid;gap:8px;margin-top:6px}
+.abbr{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:4px 14px;font-size:14px}
+.abbr b{font-family:var(--mono);font-weight:500}
+.plain-list{margin:0;padding-left:18px;display:grid;gap:4px}
+@media (prefers-reduced-motion:no-preference){.sheet{animation:up .22s ease-out}@keyframes up{from{transform:translateY(24px);opacity:.6}}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div class="brand"><svg class="logo" viewBox="0 0 64 64" aria-hidden="true"><circle cx="32" cy="32" r="32" fill="#f2c4c8"/><circle cx="30" cy="34" r="18" fill="#b0365f"/><path d="M15 28q15-8 30 4M13 36q17-10 33 3M18 46q12-8 26-2M24 17q-6 15 3 33M35 16q9 16 2 33" fill="none" stroke="#f6dce3" stroke-width="2" stroke-linecap="round"/><path d="M44 12l9 40M44 12q-4 1-3 5" fill="none" stroke="#2a2230" stroke-width="3.5" stroke-linecap="round"/></svg>
+    <h1>Crochet Project Book<small>Everything you want to make, the yarn it takes, and where the pattern lives.</small></h1></div>
+    <button class="btn primary" id="newBtn" type="button">+ New project</button>
+  </header>
+  <nav class="tabs" role="tablist" id="tabs"></nav>
+  <div id="note"></div>
+  <main id="main"></main>
+</div>
+<div id="sheetRoot"></div>
+<div id="toastRoot" aria-live="polite"></div>
+
+<script>
+const WEIGHTS=["0 Lace","1 Super Fine (fingering)","2 Fine (sport)","3 Light (DK)","4 Medium (worsted)","5 Bulky","6 Super Bulky","7 Jumbo"];
+const FIBERS=["Acrylic","Cotton","Milk cotton","Wool","Merino","Alpaca","Mohair","Bamboo","Chenille","Velvet","Blend","Other"];
+const HOOKS=["2.0 mm","2.25 mm (B-1)","2.75 mm (C-2)","3.25 mm (D-3)","3.5 mm (E-4)","3.75 mm (F-5)","4.0 mm (G-6)","4.5 mm (7)","5.0 mm (H-8)","5.5 mm (I-9)","6.0 mm (J-10)","6.5 mm (K-10½)","8.0 mm (L-11)","9.0 mm (M/N-13)","10 mm (N/P-15)","12 mm+"];
+const TECHS=[
+ {id:"mosaic",name:"Mosaic",q:"mosaic crochet",d:"Bold geometric colorwork"},
+ {id:"tapestry",name:"Tapestry",q:"tapestry crochet",d:"Picture colorwork, yarn carried along"},
+ {id:"filet",name:"Filet",q:"filet crochet",d:"Lacy mesh with filled-in images"},
+ {id:"c2c",name:"C2C",q:"corner to corner c2c crochet",d:"Diagonal tiles for pixel pictures"},
+ {id:"amigurumi",name:"Amigurumi",q:"amigurumi crochet",d:"Stuffed toys worked in spirals"},
+ {id:"tunisian",name:"Tunisian",q:"tunisian crochet",d:"Long hook, knit-like fabric"},
+ {id:"russian",name:"Russian",q:"russian crochet",d:"Fine lace and doilies"},
+ {id:"bruges",name:"Bruges lace",q:"bruges lace crochet",d:"Lace built from crochet ribbons"},
+ {id:"granny",name:"Granny squares",q:"granny square crochet",d:"Classic squares joined together"},
+ {id:"garment",name:"Garments",q:"crochet garment",d:"Tops, cardigans and sweaters"},
+ {id:"other",name:"Other",q:"crochet",d:"Any technique"}
+];
+const STATUS={wishlist:"Wishlist",active:"In progress",done:"Done"};
+const GENERAL_SITES=[
+ {name:"Ravelry",url:"https://www.ravelry.com/patterns/search#craft=crochet&availability=free",d:"Largest pattern database",art:"p:ravelry"},
+ {name:"DROPS Design",url:"https://www.garnstudio.com",d:"Thousands of free patterns with charts",art:"garment"},
+ {name:"Yarnspirations",url:"https://www.yarnspirations.com",d:"Free patterns from Caron, Red Heart, Bernat",art:"c2c"},
+ {name:"AllFreeCrochet",url:"https://www.allfreecrochet.com",d:"Free patterns by project and skill level",art:"granny"},
+ {name:"Moogly",url:"https://www.mooglyblog.com",d:"Free patterns and stitch videos",art:"tapestry"}
+];
+const TECH_SITES={
+ mosaic:[{name:"Tinycurl",url:"https://www.tinycurl.com",d:"Overlay mosaic designs and charts",art:"lv_advanced"}],
+ amigurumi:[{name:"Amigurumi Today",url:"https://amigurumi.today",d:"Free toy patterns with step photos",art:"toy"}],
+ tapestry:[{name:"CrochetPARADE",url:"https://crochetparade.org",d:"Free tool to draw crochet charts",art:"filet"}],
+ filet:[{name:"CrochetPARADE",url:"https://crochetparade.org",d:"Free tool to draw crochet charts",art:"filet"}]
+};
+const ITEMS=[
+ {id:"blanket",name:"Blanket",q:"blanket",d:"Throws, baby blankets, afghans"},
+ {id:"bag",name:"Bag",q:"bag",d:"Totes, market bags, pouches"},
+ {id:"top",name:"Top or cardigan",q:"top cardigan",d:"Wearables and sweaters"},
+ {id:"hat",name:"Hat",q:"hat beanie",d:"Beanies and bucket hats"},
+ {id:"scarf",name:"Scarf or shawl",q:"scarf shawl",d:"Wraps, cowls, scarves"},
+ {id:"toy",name:"Toy or plushie",q:"plushie",d:"Animals, dolls, keychains"},
+ {id:"decor",name:"Home decor",q:"pillow coaster home decor",d:"Pillows, coasters, wall hangings"},
+ {id:"accessory",name:"Small accessory",q:"scrunchie keychain",d:"Scrunchies, keychains, bookmarks"},
+ {id:"any",name:"Show me everything",q:"",d:"Any kind of project"}
+];
+const LEVELS=[
+ {id:"beginner",name:"Beginner-friendly",q:"easy beginner",d:"Basic stitches, clear steps"},
+ {id:"intermediate",name:"Intermediate",q:"intermediate",d:"Some color changes or shaping"},
+ {id:"advanced",name:"Advanced",q:"advanced",d:"Complex charts and construction"},
+ {id:"any",name:"Any level",q:"",d:"Don't filter by difficulty"}
+];
+
+/* ---------- pictures, drawn as SVG so they load anywhere ---------- */
+const C={cream:"#efe6d2",white:"#fbf8f2",green:"#2f5d46",sage:"#9db59a",rose:"#d99aa6",berry:"#b0365f",mustard:"#d8a53a",teal:"#2b8a84",navy:"#2c3e66",rust:"#c0603a",lilac:"#a993c9",sky:"#8cc2dd",ink:"#2a2230",peach:"#f2b58f"};
+const f1=n=>Math.round(n*10)/10;
+const BG=f=>`<rect width="200" height="150" fill="${f}"/>`;
+function cells(cols,rows,size,fn,ox=0,oy=0){let s="";for(let y=0;y<rows;y++)for(let x=0;x<cols;x++){const c=fn(x,y);if(c)s+=`<rect x="${ox+x*size}" y="${oy+y*size}" width="${size+.4}" height="${size+.4}" fill="${c}"/>`}return s}
+const mosaicFn=(a,b)=>(x,y)=>{const d=Math.abs((x%12)-6)+Math.abs((y%12)-6);return d%4<2?a:b};
+const ART={
+ mosaic:()=>cells(25,19,8,mosaicFn(C.teal,C.cream)),
+ tapestry:()=>BG(C.white)+cells(29,22,7,(x,y)=>{const b=y%11;if(b===0||b===10)return C.rust;const d=Math.abs((x%10)-5)+Math.abs(b-5);return d<=2?C.mustard:d===4?C.green:null}),
+ filet:()=>{let p="";for(let i=0;i<=20;i++)p+=`M${i*10} 0V150`;for(let j=0;j<=15;j++)p+=`M0 ${j*10}H200`;
+   return BG(C.navy)+cells(20,15,10,(x,y)=>{const nx=(x-9.5)/4.5,ny=(6.5-y)/4.5,v=Math.pow(nx*nx+ny*ny-1,3)-nx*nx*ny*ny*ny;return v<=0?C.white:null})+`<path d="${p}" stroke="${C.white}" stroke-width="1.6" opacity=".85"/>`},
+ c2c:()=>{const P=[C.berry,C.peach,C.cream,C.mustard];let s=BG(C.cream)+'<g transform="rotate(45 100 75)">';for(let y=-6;y<19;y++)for(let x=-6;x<22;x++)s+=`<rect x="${x*12-40}" y="${y*12-40}" width="11" height="11" rx="1.5" fill="${P[((Math.floor((x+y)/3)%4)+4)%4]}"/>`;return s+"</g>"},
+ amigurumi:(bg=C.sky)=>BG(bg)+`<ellipse cx="84" cy="42" rx="11" ry="30" fill="${C.white}"/><ellipse cx="116" cy="42" rx="11" ry="30" fill="${C.white}"/><ellipse cx="84" cy="44" rx="5" ry="20" fill="${C.rose}"/><ellipse cx="116" cy="44" rx="5" ry="20" fill="${C.rose}"/><ellipse cx="100" cy="140" rx="38" ry="34" fill="${C.white}"/><circle cx="100" cy="86" r="32" fill="${C.white}"/><circle cx="89" cy="82" r="3.5" fill="${C.ink}"/><circle cx="111" cy="82" r="3.5" fill="${C.ink}"/><circle cx="82" cy="94" r="5" fill="${C.rose}" opacity=".7"/><circle cx="118" cy="94" r="5" fill="${C.rose}" opacity=".7"/><path d="M96 92q4 4 8 0" stroke="${C.ink}" stroke-width="2" fill="none" stroke-linecap="round"/>`,
+ tunisian:()=>{let s=BG(C.green),p="";for(let y=0;y<17;y++){p+=`M0 ${y*9+8.5}H200`;for(let x=0;x<20;x++)s+=`<rect x="${x*10+2}" y="${y*9+1}" width="6" height="7" rx="2" fill="${(y>>2)%2?C.cream:C.sage}"/>`}return s+`<path d="${p}" stroke="${C.ink}" stroke-opacity=".25"/>`},
+ russian:()=>{let s=BG(C.berry);for(let r=1;r<=4;r++){const n=6*r,R0=r*18;for(let i=0;i<n;i++){const a=i/n*Math.PI*2,x=f1(100+Math.cos(a)*R0),y=f1(75+Math.sin(a)*R0);s+=`<ellipse cx="${x}" cy="${y}" rx="${4+r}" ry="${f1(2.5+r*.6)}" transform="rotate(${f1(a*180/Math.PI)} ${x} ${y})" fill="none" stroke="${C.white}" stroke-width="1.6"/>`}s+=`<circle cx="100" cy="75" r="${R0+9}" fill="none" stroke="${C.white}" stroke-dasharray="2 3" opacity=".8"/>`}return s+`<circle cx="100" cy="75" r="7" fill="${C.white}"/>`},
+ bruges:()=>BG(C.green)+["M-10 45C30 -5 70 -5 100 45S170 95 210 45","M-10 110C30 60 70 60 100 110S170 160 210 110"].map(d=>`<path d="${d}" fill="none" stroke="${C.cream}" stroke-width="18"/><path d="${d}" fill="none" stroke="${C.green}" stroke-width="11" stroke-dasharray="2 4"/>`).join(""),
+ granny:()=>{const sets=[[C.white,C.berry,C.mustard,C.teal],[C.white,C.teal,C.rose,C.mustard],[C.white,C.mustard,C.teal,C.berry]];let s=BG(C.cream),k=0;for(let gy=0;gy<3;gy++)for(let gx=0;gx<4;gx++){const x=gx*52-4,y=gy*52-4,p=sets[k++%3];for(let r=0;r<4;r++){const o=4+r*6;s+=`<rect x="${x+o}" y="${y+o}" width="${48-o*2}" height="${48-o*2}" fill="none" stroke="${p[r]}" stroke-width="5" stroke-dasharray="9 2.5"/>`}}return s},
+ garment:(bg=C.lilac,a=C.cream,b=C.navy)=>{let s=BG(bg)+`<path d="M70 25L50 30L22 80L38 88L58 58V140H142V58L162 88L178 80L150 30L130 25Q100 42 70 25Z" fill="${a}"/>`;for(let y=70;y<140;y+=16)s+=`<rect x="58" y="${y}" width="84" height="7" fill="${b}"/>`;return s+`<path d="M70 25Q100 42 130 25" fill="none" stroke="${b}" stroke-width="4"/>`},
+ other:()=>BG(C.peach)+`<circle cx="100" cy="78" r="44" fill="${C.rust}"/><path d="M62 60Q100 40 138 70M58 80Q100 58 142 92M66 104Q100 84 136 112M80 40Q70 80 92 120M110 36Q132 80 120 120" stroke="${C.cream}" stroke-opacity=".55" stroke-width="2.5" fill="none"/><path d="M152 34L176 140M152 34q-7 2-4 9" stroke="${C.ink}" stroke-width="5" fill="none" stroke-linecap="round"/>`,
+ blanket:()=>{const P=[C.rose,C.cream,C.mustard,C.cream,C.teal,C.cream];let s=BG(C.sage)+'<g transform="rotate(-8 100 75)">',p="";for(let i=0;i<7;i++)s+=`<rect x="30" y="${22+i*14}" width="140" height="14" fill="${P[i%6]}"/>`;for(let x=33;x<170;x+=6)p+=`M${x} 120v16`;return s+`<path d="${p}" stroke="${C.cream}" stroke-width="2"/></g>`},
+ bag:()=>BG(C.peach)+`<path d="M72 58V40Q72 18 100 18T128 40V58" stroke="${C.green}" stroke-width="7" fill="none"/><rect x="45" y="52" width="110" height="88" rx="6" fill="${C.cream}"/>`+cells(22,5,5,mosaicFn(C.green,C.cream),45,80),
+ top:()=>ART.garment(C.sky,C.white,C.berry),
+ hat:()=>{let p="";for(let x=46;x<156;x+=7)p+=`M${x} 108v20`;return BG(C.mustard)+`<path d="M45 112Q45 42 100 42T155 112Z" fill="${C.teal}"/><rect x="40" y="104" width="120" height="28" rx="6" fill="${C.navy}"/><path d="${p}" stroke="${C.teal}" stroke-width="2" opacity=".6"/><circle cx="100" cy="38" r="17" fill="${C.cream}"/>`},
+ scarf:()=>{let s=BG(C.navy)+`<g transform="rotate(-25 100 75)"><rect x="-30" y="55" width="260" height="40" fill="${C.rust}"/>`;for(let x=-20;x<230;x+=34)s+=`<rect x="${x}" y="55" width="8" height="40" fill="${C.cream}"/>`;return s+"</g>"},
+ toy:()=>ART.amigurumi(C.peach),
+ decor:()=>{const P=[C.berry,C.mustard,C.teal];let s=BG(C.sage)+`<rect x="22" y="28" width="104" height="94" rx="16" fill="${C.cream}"/>`;for(let r=0;r<3;r++){const o=14+r*12;s+=`<rect x="${22+o}" y="${f1(28+o*.9)}" width="${104-o*2}" height="${f1(94-o*1.8)}" rx="6" fill="none" stroke="${P[r]}" stroke-width="6" stroke-dasharray="10 3"/>`}[[158,58,26],[162,116,22]].forEach(([x,y,r])=>{s+=`<circle cx="${x}" cy="${y}" r="${r}" fill="${C.white}"/><circle cx="${x}" cy="${y}" r="${r-7}" fill="none" stroke="${C.rose}" stroke-width="5" stroke-dasharray="6 2"/>`});return s},
+ accessory:()=>BG(C.lilac)+`<circle cx="78" cy="78" r="36" fill="none" stroke="${C.rose}" stroke-width="24" stroke-dasharray="7 2.5"/><circle cx="150" cy="40" r="11" fill="none" stroke="${C.ink}" stroke-width="3"/><path d="M150 51v12" stroke="${C.ink}" stroke-width="3"/><path d="M150 118C120 98 128 72 150 86C172 72 180 98 150 118Z" fill="${C.berry}"/>`,
+ lv_beginner:()=>{let s=BG(C.cream);for(let y=0;y<13;y++)for(let x=0;x<17;x++)s+=`<rect x="${x*12+2}" y="${y*12+2}" width="9" height="9" rx="3" fill="${C.teal}" opacity="${y%2?.8:1}"/>`;return s},
+ lv_intermediate:()=>{let s=BG(C.rose);for(let y=0;y<10;y++)for(let x=0;x<13;x++)s+=`<circle cx="${x*17+(y%2?8:0)+2}" cy="${y*17+4}" r="7" fill="${C.cream}"/>`;return s},
+ lv_advanced:()=>cells(25,19,8,mosaicFn(C.navy,C.mustard)),
+ lv_any:()=>ART.other()
+};
+const nest=(k,x,y,w,h)=>`<svg x="${x}" y="${y}" width="${w}" height="${h}" viewBox="0 0 200 150" preserveAspectRatio="xMidYMid slice">${(ART[k]||ART.other)()}</svg>`;
+const PLAT={
+ ravelry:t=>BG(C.cream)+`<rect x="48" y="10" width="104" height="150" rx="4" fill="#fff" stroke="#d6cdbf"/><rect x="60" y="22" width="60" height="6" rx="3" fill="${C.ink}"/>`+nest(t,60,36,80,60)+`<path d="M60 108h80M60 118h70M60 128h76M60 138h60" stroke="#cfc6d8" stroke-width="4" stroke-linecap="round"/>`,
+ youtube:t=>BG(C.ink)+nest(t,18,18,164,104)+`<circle cx="100" cy="70" r="20" fill="rgba(0,0,0,.55)"/><path d="M93 59L113 70L93 81Z" fill="#fff"/><rect x="18" y="127" width="164" height="4" fill="#555"/><rect x="18" y="127" width="70" height="4" fill="${C.berry}"/>`,
+ tiktok:t=>BG(C.ink)+`<rect x="62" y="4" width="76" height="142" rx="12" fill="#000"/>`+nest(t,66,10,68,130)+`<circle cx="124" cy="70" r="5" fill="#fff" opacity=".9"/><circle cx="124" cy="86" r="5" fill="#fff" opacity=".9"/><circle cx="124" cy="102" r="5" fill="#fff" opacity=".9"/><path d="M90 66L106 76L90 86Z" fill="#fff" opacity=".9"/>`,
+ pinterest:t=>{const ks=[t,"granny","toy","tapestry","bag","filet"].filter((k,i,a)=>a.indexOf(k)===i).slice(0,5),L=[[8,8,58,80],[8,94,58,60],[71,8,58,52],[71,66,58,90],[134,8,58,100]];return BG(C.white)+ks.map((k,i)=>nest(k,...L[i])).join("")},
+ facebook:t=>BG(C.sky)+`<circle cx="30" cy="34" r="12" fill="${C.navy}"/><rect x="50" y="20" width="130" height="30" rx="12" fill="#fff"/><path d="M62 31h80M62 40h50" stroke="#c9c2d3" stroke-width="4" stroke-linecap="round"/><circle cx="30" cy="96" r="12" fill="${C.berry}"/><rect x="50" y="62" width="130" height="78" rx="12" fill="#fff"/>`+nest(t,58,70,114,62),
+ google:t=>BG(C.white)+`<rect x="18" y="12" width="164" height="22" rx="11" fill="#fff" stroke="#cfc8d6"/><circle cx="32" cy="23" r="5" fill="none" stroke="#9a92a5" stroke-width="2"/>`+[44,78,112].map((y,i)=>nest([t,"granny","garment"][i],18,y,40,28)+`<path d="M66 ${y+6}h100M66 ${y+15}h80M66 ${y+23}h60" stroke="${i?"#d4cddc":"#7d6fa0"}" stroke-width="4" stroke-linecap="round"/>`).join("")
+};
+const artCache={};
+function art(k,tech){const id=k+":"+(tech||"");if(!artCache[id]){const b=k.startsWith("p:")?(PLAT[k.slice(2)]||PLAT.google)(tech||"mosaic"):(ART[k]||ART.other)();artCache[id]=`<svg viewBox="0 0 200 150" preserveAspectRatio="xMidYMid slice" aria-hidden="true" focusable="false">${b}</svg>`}return artCache[id]}
+
+const state={projects:{},stash:{},tab:"projects",filter:"all",wiz:{step:1,tech:null,item:null,level:null,kw:""},loaded:false,note:"",live:false};
+let db=null, assets=null, draft=null, draftKind=null, rowTimer=null, wake=null;
+/* Outside Claude, projects are saved in this browser (localStorage) and photos are stored as small images. */
+const LOCAL=!(window.claude&&typeof window.claude.use==="function");
+const LS_KEY="crochet-project-book-v1";
+function lsLoad(){try{return JSON.parse(localStorage.getItem(LS_KEY)||"null")}catch(e){return null}}
+function lsSave(){try{localStorage.setItem(LS_KEY,JSON.stringify({projects:state.projects,stash:state.stash}));return true}
+  catch(e){toast(e&&e.name==="QuotaExceededError"?"This device's storage is full. Remove some photos, or export a backup and delete old projects.":"Couldn't save on this device. Private browsing may block saving.");return false}}
+async function localUpload(blob){
+  if(!/^image\//.test(blob.type||""))throw{code:"local_pdf"};
+  const url=URL.createObjectURL(blob);
+  try{const img=await new Promise((res,rej)=>{const i=new Image();i.onload=()=>res(i);i.onerror=rej;i.src=url});
+    const s=Math.min(1,1000/Math.max(img.naturalWidth,img.naturalHeight)),cv=document.createElement("canvas");cv.width=Math.round(img.naturalWidth*s);cv.height=Math.round(img.naturalHeight*s);
+    const g=cv.getContext("2d");g.fillStyle="#fff";g.fillRect(0,0,cv.width,cv.height);g.drawImage(img,0,0,cv.width,cv.height);
+    return{id:cv.toDataURL("image/jpeg",.82),url:""}}
+  catch(e){throw{code:"unsupported_type"}}finally{URL.revokeObjectURL(url)}
+}
+const blobSrc=id=>String(id||"").startsWith("data:")?String(id):"/_blob/"+id;
+if(LOCAL)assets={upload:localUpload};
+function seedLocal(){const now=Date.now();
+  state.projects={"example-mosaic-tote":{id:"example-mosaic-tote",example:true,name:"Mosaic tote bag",technique:"mosaic",status:"active",hook:"4.0 mm (G-6)",yarns:[{color:"Cream",hex:"#efe6d2",fiber:"Cotton",weight:"3 Light (DK)",brand:"",skeins:2,yards:""},{color:"Forest green",hex:"#2f5d46",fiber:"Cotton",weight:"3 Light (DK)",brand:"",skeins:2,yards:""}],tutorialUrl:"",patternUrl:"",patternText:"Example: R1 ch 61 in Cream. R2 sc across, change to Forest green…",patternFile:null,rowCount:24,rowTotal:80,photos:[],cost:"",hours:"6",notes:"Example project. Delete it once you add your own.",updatedAt:now},
+    "example-bunny":{id:"example-bunny",example:true,name:"Amigurumi bunny",technique:"amigurumi",status:"wishlist",hook:"3.5 mm (E-4)",yarns:[{color:"Dusty pink",hex:"#d99aa6",fiber:"Milk cotton",weight:"4 Medium (worsted)",brand:"",skeins:1,yards:""},{color:"Cream",hex:"#efe6d2",fiber:"Cotton",weight:"3 Light (DK)",brand:"",skeins:1,yards:""}],tutorialUrl:"https://www.youtube.com/results?search_query=amigurumi+bunny+crochet+tutorial",patternUrl:"",patternText:"",patternFile:null,rowCount:0,rowTotal:"",photos:[],cost:"",hours:"",notes:"Example project.",updatedAt:now-1}};
+  state.stash={"example-cream":{id:"example-cream",example:true,color:"Cream",hex:"#efe6d2",fiber:"Cotton",weight:"3 Light (DK)",brand:"",skeins:2,cost:4.5,updatedAt:now},
+    "example-green":{id:"example-green",example:true,color:"Forest green",hex:"#2f5d46",fiber:"Cotton",weight:"3 Light (DK)",brand:"",skeins:1,cost:4.5,updatedAt:now}};
+}
+const $=s=>document.querySelector(s);
+const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const safeUrl=u=>/^https?:\/\//i.test(String(u||"").trim())?String(u).trim():"";
+const clone=o=>JSON.parse(JSON.stringify(o));
+const techName=id=>(TECHS.find(t=>t.id===id)||{name:"Other"}).name;
+const newId=p=>p+Date.now().toString(36)+Math.random().toString(36).slice(2,6);
+const num=v=>{const n=parseFloat(v);return isFinite(n)?n:0};
+
+function platform(u){
+  u=safeUrl(u); if(!u) return null;
+  let h; try{h=new URL(u).hostname.replace(/^(www|m|vm|vt)\./,"")}catch(e){return {name:"Link"}}
+  if(/tiktok\./.test(h))return{name:"TikTok"};
+  if(/youtube\.|youtu\.be/.test(h))return{name:"YouTube"};
+  if(/facebook\.|fb\.watch/.test(h))return{name:"Facebook"};
+  if(/pinterest\.|pin\.it/.test(h))return{name:"Pinterest"};
+  if(/instagram\./.test(h))return{name:"Instagram"};
+  if(/ravelry\./.test(h))return{name:"Ravelry"};
+  return{name:h};
+}
+function toast(msg){const r=$("#toastRoot");r.innerHTML=`<div class="toast">${esc(msg)}</div>`;clearTimeout(toast.t);toast.t=setTimeout(()=>r.innerHTML="",2400)}
+
+/* ---------- data ---------- */
+async function init(){
+  render();
+  const c=window.claude;
+  if(!c||typeof c.use!=="function"){const d=lsLoad();if(d){state.projects=d.projects||{};state.stash=d.stash||{}}else{seedLocal();try{localStorage.setItem(LS_KEY,JSON.stringify({projects:state.projects,stash:state.stash}))}catch(e){state.note="This browser isn't letting the app save. Private browsing can block it."}}
+    state.loaded=true;state.local=true;render();return}
+  const timer=setTimeout(()=>{if(!state.live){state.note="Can't reach your saved projects yet. Check your connection; they'll appear when it's back.";render()}},10000);
+  db=await c.use("db");
+  c.use("assets").then(a=>{assets=a; if(draft) renderSheet()}).catch(()=>{});
+  if(!db){clearTimeout(timer);state.loaded=true;state.note="Sign in to Claude to see and save your projects.";render();return}
+  let got={p:false,s:false};
+  const onErr=e=>{clearTimeout(timer);state.loaded=true;state.note="Couldn't load your data ("+e.code+"). Reload the page to try again.";render()};
+  db.collection("projects").onSnapshot(s=>{
+    const m={}; s.docs.forEach(d=>m[d.id]=Object.assign({id:d.id},clone(d.data()))); state.projects=m;
+    got.p=true; if(!s.metadata.fromCache&&got.s){state.live=true;state.loaded=true;state.note="";clearTimeout(timer)}
+    if(got.p&&got.s)state.loaded=true; render();
+  },onErr);
+  db.collection("stash").onSnapshot(s=>{
+    const m={}; s.docs.forEach(d=>m[d.id]=Object.assign({id:d.id},clone(d.data()))); state.stash=m;
+    got.s=true; if(!s.metadata.fromCache&&got.p){state.live=true;state.loaded=true;state.note="";clearTimeout(timer)}
+    if(got.p&&got.s)state.loaded=true; render();
+  },onErr);
+}
+async function write(coll,id,body){
+  const clean=clone(body); delete clean.id; clean.updatedAt=Date.now();
+  if(!db){const key=coll==="projects"?"projects":"stash",old=state[key][id];state[key][id]=Object.assign({id},clean);
+    if(!lsSave()){if(old)state[key][id]=old;else delete state[key][id];return false}render();return true}
+  try{await db.collection(coll).doc(id).set(clean);return true}
+  catch(e){toast(e.code==="quota_exceeded"?"Storage is full. Delete something first.":"Couldn't save ("+(e.code||"error")+"). Try again.");return false}
+}
+async function remove(coll,id){
+  if(!db){delete state[coll][id];lsSave();render();return}
+  try{await db.collection(coll).doc(id).delete()}catch(e){toast("Couldn't delete. Try again.")}
+}
+
+/* ---------- derived ---------- */
+const keyOf=(c,w)=>(c||"").trim().toLowerCase()+"|"+(w||"");
+function shopping(){
+  const need={};
+  Object.values(state.projects).filter(p=>p.status!=="done").forEach(p=>(p.yarns||[]).forEach(y=>{
+    if(!y.color&&!y.skeins)return;
+    const k=keyOf(y.color,y.weight);
+    need[k]=need[k]||{color:y.color||"Unnamed color",hex:y.hex||"#cccccc",weight:y.weight,fiber:y.fiber,skeins:0,projects:[]};
+    need[k].skeins+=num(y.skeins); if(!need[k].projects.includes(p.name))need[k].projects.push(p.name||"Untitled");
+  }));
+  const have={},price={};
+  Object.values(state.stash).forEach(s=>{const k=keyOf(s.color,s.weight);have[k]=(have[k]||0)+num(s.skeins);if(num(s.cost))price[k]=num(s.cost)});
+  return Object.entries(need).map(([k,n])=>Object.assign(n,{have:have[k]||0,buy:Math.max(0,Math.ceil(n.skeins-(have[k]||0))),price:price[k]||0}))
+    .sort((a,b)=>b.buy-a.buy);
+}
+
+/* ---------- main render ---------- */
+function render(){
+  const P=Object.values(state.projects), S=Object.values(state.stash), buyN=shopping().filter(x=>x.buy>0).length;
+  const tabs=[["projects","Projects",P.length],["stash","Yarn stash",S.length],["buy","To buy",buyN],["find","Find patterns",null],["make","Make a pattern",null]];
+  $("#tabs").innerHTML=tabs.map(([id,l,c])=>`<button role="tab" type="button" data-tab="${id}" aria-selected="${state.tab===id}">${l}${c!=null?`<span class="count">${c}</span>`:""}</button>`).join("");
+  $("#note").innerHTML=state.note?`<div class="note">${esc(state.note)}</div>`:"";
+  $("#newBtn").textContent=state.tab==="stash"?"+ Add yarn":"+ New project";
+  const v={projects:viewProjects,stash:viewStash,buy:viewBuy,find:viewFind,make:()=>viewMake()}[state.tab];
+  $("#main").innerHTML=v(P,S);
+  if(state.tab==="make"&&typeof afterMakeRender==="function")afterMakeRender();
+  if(state.tab==="find"){const i=$("#q");if(i&&state._qFocus){i.focus();i.setSelectionRange(i.value.length,i.value.length)}}
+}
+function exampleBanner(list){
+  const n=list.filter(x=>x.example).length; if(!n)return "";
+  return `<div class="note spread"><span><b>${n} example${n>1?"s":""}</b> to show how it works. Delete them when you add your own.</span><button class="btn small danger" type="button" data-act="delExamples">Delete examples</button></div>`;
+}
+function viewProjects(P){
+  if(!state.loaded&&!P.length)return `<div class="empty-state"><h2>Loading your projects…</h2></div>`;
+  const counts={all:P.length,wishlist:0,active:0,done:0}; P.forEach(p=>counts[p.status||"wishlist"]++);
+  const list=P.filter(p=>state.filter==="all"||(p.status||"wishlist")===state.filter)
+    .sort((a,b)=>({active:0,wishlist:1,done:2}[a.status||"wishlist"]-{active:0,wishlist:1,done:2}[b.status||"wishlist"])||(b.updatedAt||0)-(a.updatedAt||0));
+  const chips=`<div class="chips">${[["all","All"],["active","In progress"],["wishlist","Wishlist"],["done","Done"]].map(([k,l])=>`<button type="button" class="chip" data-filter="${k}" aria-pressed="${state.filter===k}">${l} <span class="mono">${counts[k]}</span></button>`).join("")}</div>`;
+  if(!P.length)return chips+`<div class="empty-state"><h2>No projects yet</h2><p>Add something you want to make: its colors, yarn, hook, and the TikTok, YouTube or Pinterest link you found it on.</p><button class="btn primary" type="button" data-act="new">+ New project</button></div>`;
+  const backup=state.local?`<div class="panel"><div class="spread"><div><h2>Saved on this device</h2><p class="meta" style="margin:4px 0 0">Your projects and stash live in this browser. Download a backup, then import it on your phone or laptop to copy everything over.</p></div>
+    <div class="row"><button class="btn" type="button" data-act="exportData">Download backup</button><label class="btn" for="importFile">Import backup<input class="sr" type="file" id="importFile" accept="application/json,.json"></label></div></div></div>`:"";
+  return exampleBanner(P)+chips+`<div class="grid">${list.map(card).join("")||`<p class="meta">Nothing in this list.</p>`}</div>`+backup;
+}
+function card(p){
+  const ys=(p.yarns||[]).filter(y=>y.hex);
+  const skeins=(p.yarns||[]).reduce((a,y)=>a+num(y.skeins),0);
+  const pl=platform(p.tutorialUrl);
+  const prog=num(p.rowTotal)?Math.min(100,Math.round(num(p.rowCount)/num(p.rowTotal)*100)):null;
+  return `<button type="button" class="card" data-open="${esc(p.id)}">
+    <div class="cover">${(p.photos||[])[0]?`<img src="${esc(blobSrc(p.photos[0]))}" alt="">`:art(p.technique||"other")}</div>
+    <div class="strip ${ys.length?"":"empty"}">${ys.map(y=>`<span style="background:${esc(y.hex)}"></span>`).join("")}</div>
+    <div class="body">
+      <div class="row"><span class="pill ${esc(p.status||"wishlist")}">${STATUS[p.status||"wishlist"]}</span>${p.example?`<span class="pill example">Example</span>`:""}${pl?`<span class="pill plat">${esc(pl.name)}</span>`:""}</div>
+      <div class="name">${esc(p.name||"Untitled project")}</div>
+      <div class="meta"><span>${esc(techName(p.technique))}</span>${p.hook?`<span class="mono">${esc(p.hook.split(" (")[0])} hook</span>`:""}${skeins?`<span class="mono">${skeins} skein${skeins===1?"":"s"}</span>`:""}</div>
+      ${prog!=null?`<div class="meta"><span class="mono">Row ${num(p.rowCount)} / ${num(p.rowTotal)}</span></div><div class="bar"><i style="width:${prog}%"></i></div>`:(num(p.rowCount)?`<div class="meta mono">Row ${num(p.rowCount)}</div>`:"")}
+    </div></button>`;
+}
+function viewStash(P,S){
+  if(!state.loaded&&!S.length)return `<div class="empty-state"><h2>Loading your stash…</h2></div>`;
+  if(!S.length)return `<div class="empty-state"><h2>Your stash is empty</h2><p>Add the yarn you already own. The To buy tab subtracts it from what your projects need.</p><button class="btn primary" type="button" data-act="newYarn">+ Add yarn</button></div>`;
+  const total=S.reduce((a,s)=>a+num(s.skeins),0), value=S.reduce((a,s)=>a+num(s.skeins)*num(s.cost),0);
+  const list=S.sort((a,b)=>(a.color||"").localeCompare(b.color||""));
+  return exampleBanner(S)+`<div class="meta"><span class="mono">${total} skeins</span>${value?`<span class="mono">≈ ${value.toFixed(2)} spent</span>`:""}</div>
+  <div class="list">${list.map(s=>`<div class="li">
+    <span class="sw" style="background-color:${esc(s.hex||"#ccc")}"></span>
+    <div style="min-width:0"><div class="t">${esc(s.color||"Unnamed")} ${s.example?`<span class="pill example">Example</span>`:""}</div>
+      <div class="meta"><span>${esc(s.weight||"Weight?")}</span>${s.fiber?`<span>${esc(s.fiber)}</span>`:""}${s.brand?`<span>${esc(s.brand)}</span>`:""}${num(s.cost)?`<span class="mono">${num(s.cost).toFixed(2)}/skein</span>`:""}</div>
+      <button type="button" class="btn small" style="margin-top:6px" data-edit-yarn="${esc(s.id)}">Edit</button></div>
+    <div class="qty"><button type="button" aria-label="One less skein" data-skein="${esc(s.id)}" data-d="-1">−</button><span class="mono">${num(s.skeins)}</span><button type="button" aria-label="One more skein" data-skein="${esc(s.id)}" data-d="1">+</button></div>
+  </div>`).join("")}</div>`;
+}
+function viewBuy(){
+  const L=shopping();
+  if(!L.length)return `<div class="empty-state"><h2>Nothing to buy yet</h2><p>Add yarn colors and skein counts to your wishlist and in-progress projects. This list shows what your stash doesn't cover.</p></div>`;
+  const toBuy=L.filter(x=>x.buy>0), cost=toBuy.reduce((a,x)=>a+x.buy*x.price,0);
+  return `<div class="note">Matched to your stash by <b>color name</b> and <b>yarn weight</b>, so spell colors the same way in both places. Finished projects are left out.</div>
+  <div class="meta"><span class="mono">${toBuy.reduce((a,x)=>a+x.buy,0)} skeins to buy</span>${cost?`<span class="mono">≈ ${cost.toFixed(2)} (using stash prices)</span>`:""}</div>
+  <div class="list">${L.map(x=>`<div class="li">
+    <span class="sw" style="background-color:${esc(x.hex)}"></span>
+    <div style="min-width:0"><div class="t">${esc(x.color)}</div>
+      <div class="meta"><span>${esc(x.weight||"Weight not set")}</span>${x.fiber?`<span>${esc(x.fiber)}</span>`:""}</div>
+      <div class="meta">For: ${esc(x.projects.join(", "))}</div></div>
+    <div class="buy">${x.buy?`<b>Buy ${x.buy}</b>`:`<span class="okk">Covered</span>`}<div class="meta" style="justify-content:flex-end">need ${x.skeins} · have ${x.have}</div></div>
+  </div>`).join("")}</div>`;
+}
+function tile(o){
+  const inner=`<span class="art">${o.art}</span><span class="cap"><b>${esc(o.name)}</b>${o.d?`<small>${esc(o.d)}</small>`:""}</span>`;
+  if(o.href)return `<a class="tile" href="${esc(o.href)}" target="_blank" rel="noopener">${inner}<span class="go" aria-hidden="true">↗</span></a>`;
+  return `<button type="button" class="tile" ${o.attrs} aria-pressed="${!!o.pressed}">${inner}<span class="tick" aria-hidden="true">✓</span></button>`;
+}
+const byId=(arr,id)=>arr.find(x=>x.id===id)||arr[arr.length-1];
+function viewFind(){
+  const w=state.wiz;
+  if(w.step<4){
+    let q,sub,body;
+    if(w.step===1){q="Which technique do you want to try?";sub="Tap one to continue.";
+      body=`<div class="tiles">${TECHS.map(t=>tile({attrs:`data-wiz="tech" data-val="${t.id}"`,art:art(t.id),name:t.id==="other"?"Not sure yet":t.name,d:t.id==="other"?"Show me all techniques":t.d,pressed:w.tech===t.id})).join("")}</div>`}
+    else if(w.step===2){q="What do you want to make?";sub="Tap one. Have something specific in mind? Type it first.";
+      body=`<div class="kw"><label class="f" for="kw">Something specific (optional)<input type="text" id="kw" value="${esc(w.kw)}" placeholder="e.g. bunny, sunflower, market tote"></label><button class="btn" type="button" data-act="wizNext">Continue with my words</button></div>
+      <div class="tiles">${ITEMS.map(i=>tile({attrs:`data-wiz="item" data-val="${i.id}"`,art:art(i.id==="any"?"other":i.id),name:i.name,d:i.d,pressed:w.item===i.id})).join("")}</div>`}
+    else {q="How challenging should it be?";sub="Tap one to see where to look.";
+      body=`<div class="tiles">${LEVELS.map(l=>tile({attrs:`data-wiz="level" data-val="${l.id}"`,art:art("lv_"+l.id),name:l.name,d:l.d,pressed:w.level===l.id})).join("")}</div>`}
+    return `<section class="wiz"><div class="wiz-top"><span class="eyebrow">Step ${w.step} of 3</span>${w.step>1?`<button class="btn small" type="button" data-act="wizBack">← Back</button>`:""}</div>
+      <div class="steps" aria-hidden="true">${[1,2,3].map(i=>`<i class="${i<=w.step?"on":""}"></i>`).join("")}</div>
+      <h2 class="q">${q}</h2><p class="meta sub">${sub}</p>${body}</section>`;
+  }
+  const t=byId(TECHS,w.tech),it=byId(ITEMS,w.item),lv=byId(LEVELS,w.level),e=encodeURIComponent;
+  const q=[lv.q,t.q,it.q,w.kw].filter(Boolean).join(" ");
+  const rq=[t.q,it.q,w.kw].filter(Boolean).join(" ").replace(/\bcrochet\b/g,"").replace(/\s+/g," ").trim();
+  const what=w.kw||(it.id==="any"?"projects":it.name.toLowerCase());
+  const summary=`${t.id==="other"?"Crochet":t.name} ${what}`;
+  const links=[
+    ["ravelry","Ravelry","Free patterns only",`https://www.ravelry.com/patterns/search#craft=crochet&availability=free${rq?"&query="+e(rq):""}`],
+    ["youtube","YouTube","Step-by-step videos",`https://www.youtube.com/results?search_query=${e(q+" tutorial")}`],
+    ["tiktok","TikTok","Quick tutorials",`https://www.tiktok.com/search?q=${e(q)}`],
+    ["pinterest","Pinterest","Free pattern pins",`https://www.pinterest.com/search/pins/?q=${e(q+" free pattern")}`],
+    ["facebook","Facebook","Groups and posts",`https://www.facebook.com/search/top/?q=${e(q+" pattern")}`],
+    ["google","Google","Blogs and PDFs",`https://www.google.com/search?q=${e(q+" free pattern")}`]
+  ];
+  const sites=(TECH_SITES[t.id]||[]).concat(GENERAL_SITES);
+  return `<section class="wiz">
+    <div class="wiz-top"><span class="eyebrow">Your search</span><button class="btn small" type="button" data-act="wizRestart">Start over</button></div>
+    <h2 class="q">${esc(summary)}</h2>
+    <p class="meta sub">${esc(lv.name)} · free patterns and tutorials<br>
+      <button class="linkbtn" type="button" data-act="wizEdit" data-step="1">Change technique</button> · <button class="linkbtn" type="button" data-act="wizEdit" data-step="2">Change project</button> · <button class="linkbtn" type="button" data-act="wizEdit" data-step="3">Change level</button></p>
+    <h3 style="margin-top:8px">Search on</h3>
+    <div class="tiles">${links.map(([k,n,d,u])=>tile({href:u,art:art("p:"+k,t.id),name:n,d})).join("")}</div>
+    <div class="panel">
+      <h2>Found one you like?</h2>
+      <p class="meta" style="margin:0">Paste the link and it goes on your wishlist. TikTok, YouTube, Facebook, Pinterest and Instagram links are saved as the tutorial; anything else as the pattern.</p>
+      <div class="fields">
+        <label class="f" for="qaUrl">Link<input type="url" id="qaUrl" placeholder="https://"></label>
+        <label class="f" for="qaName">Name<input type="text" id="qaName" data-def="${esc(summary)}" placeholder="${esc(summary)}"></label>
+      </div>
+      <div><button class="btn primary" type="button" data-act="quickAdd">Add to wishlist</button></div>
+    </div>
+    <h3 style="margin-top:14px">Free pattern sites</h3>
+    <div class="tiles">${sites.map(s=>tile({href:s.url,art:art(s.art,t.id),name:s.name,d:s.d})).join("")}</div>
+    <p class="meta" style="margin:0">Patterns stay on the designer's site. This app saves the link so you can find it again.</p>
+  </section>`;
+}
+
+/* ---------- sheet: project ---------- */
+function blankProject(extra){return Object.assign({id:db?db.collection("projects").doc().id:newId("p"),name:"",technique:state.wiz.tech||"other",status:"wishlist",yarns:[{color:"",hex:"#c94f7c",fiber:"Acrylic",weight:WEIGHTS[4],brand:"",skeins:1,yards:""}],hook:"",tutorialUrl:"",patternUrl:"",patternText:"",patternFile:null,rowCount:0,rowTotal:"",photos:[],cost:"",hours:"",notes:""},extra||{})}
+function openProject(id){draftKind="project";draft=id?clone(state.projects[id]):blankProject();draft._new=!id;renderSheet()}
+function openYarn(id){draftKind="yarn";draft=id?clone(state.stash[id]):{id:db?db.collection("stash").doc().id:newId("s"),color:"",hex:"#3d7fb8",fiber:"Acrylic",weight:WEIGHTS[4],brand:"",skeins:1,cost:""};draft._new=!id;renderSheet()}
+function closeSheet(){draft=null;draftKind=null;$("#sheetRoot").innerHTML="";if(wake){wake.release().catch(()=>{});wake=null}clearTimeout(rowTimer)}
+const opt=(arr,v)=>arr.map(a=>`<option ${a===v?"selected":""}>${esc(a)}</option>`).join("");
+function renderSheet(){
+  if(!draft)return;
+  const d=draft;
+  const head=(title)=>`<div class="sheet-head"><h2 id="sheetTitle">${title}</h2><div class="row"><button class="btn" type="button" data-act="close">Cancel</button><button class="btn primary" type="button" data-act="save">Save</button></div></div>`;
+  let html;
+  if(draftKind==="yarn"){
+    html=head(d._new?"Add yarn":"Edit yarn")+`<div class="sec"><div class="yarn"><input type="color" id="y_hex" data-f="hex" value="${esc(d.hex||"#cccccc")}" aria-label="Swatch color">
+      <div class="fields">
+        <label class="f" for="y_color">Color name<input type="text" id="y_color" data-f="color" value="${esc(d.color)}" placeholder="e.g. Dusty rose"></label>
+        <label class="f" for="y_weight">Weight<select id="y_weight" data-f="weight">${opt(WEIGHTS,d.weight)}</select></label>
+        <label class="f" for="y_fiber">Yarn type<select id="y_fiber" data-f="fiber">${opt(FIBERS,d.fiber)}</select></label>
+        <label class="f" for="y_brand">Brand / line<input type="text" id="y_brand" data-f="brand" value="${esc(d.brand)}" placeholder="e.g. Red Heart Super Saver"></label>
+        <label class="f" for="y_skeins">Skeins owned<input type="number" min="0" step="0.5" id="y_skeins" data-f="skeins" value="${esc(d.skeins)}"></label>
+        <label class="f" for="y_cost">Price per skein<input type="number" min="0" step="0.01" id="y_cost" data-f="cost" value="${esc(d.cost)}"></label>
+      </div></div></div>
+      ${d._new?"":`<div class="sec"><div><button class="btn danger" type="button" data-act="delete">Delete this yarn</button></div></div>`}`;
+  } else {
+    const pl=platform(d.tutorialUrl), tu=safeUrl(d.tutorialUrl), pu=safeUrl(d.patternUrl);
+    html=head(d._new?"New project":esc(d.name||"Edit project"))+`
+    <div class="sec"><div class="fields">
+      <label class="f" for="p_name" style="grid-column:1/-1">Project name<input type="text" id="p_name" data-f="name" value="${esc(d.name)}" placeholder="e.g. Mosaic tote bag"></label>
+      <div class="f" style="grid-column:1/-1">Technique<div class="tiles sm" role="group" aria-label="Technique">${TECHS.map(t=>tile({attrs:`data-pick-tech="${t.id}"`,art:art(t.id),name:t.name,pressed:t.id===d.technique})).join("")}</div></div>
+      <label class="f" for="p_status">Status<select id="p_status" data-f="status">${Object.entries(STATUS).map(([k,l])=>`<option value="${k}" ${k===d.status?"selected":""}>${l}</option>`).join("")}</select></label>
+      <label class="f" for="p_hook">Hook size<select id="p_hook" data-f="hook"><option value="">Choose…</option>${opt(HOOKS,d.hook)}</select></label>
+    </div></div>
+    <div class="sec"><div class="spread"><h3 style="margin:0">Yarn and colors</h3><button class="btn small" type="button" data-act="addYarnLine">+ Add color</button></div>
+      ${(d.yarns||[]).map((y,i)=>`<div class="yarn"><input type="color" id="yl_hex_${i}" data-y="${i}" data-k="hex" value="${esc(y.hex||"#cccccc")}" aria-label="Color ${i+1} swatch">
+        <div class="fields">
+          <label class="f" for="yl_color_${i}">Color<input type="text" id="yl_color_${i}" data-y="${i}" data-k="color" value="${esc(y.color)}" placeholder="e.g. Cream"></label>
+          <label class="f" for="yl_fiber_${i}">Yarn type<select id="yl_fiber_${i}" data-y="${i}" data-k="fiber">${opt(FIBERS,y.fiber)}</select></label>
+          <label class="f" for="yl_weight_${i}">Weight<select id="yl_weight_${i}" data-y="${i}" data-k="weight">${opt(WEIGHTS,y.weight)}</select></label>
+          <label class="f" for="yl_brand_${i}">Brand<input type="text" id="yl_brand_${i}" data-y="${i}" data-k="brand" value="${esc(y.brand)}"></label>
+          <label class="f" for="yl_skeins_${i}">Skeins needed<input type="number" min="0" step="0.5" id="yl_skeins_${i}" data-y="${i}" data-k="skeins" value="${esc(y.skeins)}"></label>
+          <label class="f" for="yl_yards_${i}">Yards per skein<input type="number" min="0" id="yl_yards_${i}" data-y="${i}" data-k="yards" value="${esc(y.yards)}"></label>
+        </div>
+        ${(d.yarns||[]).length>1?`<div></div><div><button class="btn small danger" type="button" data-rmyarn="${i}">Remove color</button></div>`:""}</div>`).join("")}
+    </div>
+    <div class="sec"><h3>Tutorial</h3>
+      <label class="f" for="p_tut">Video or post link (TikTok, YouTube, Facebook, Pinterest…)<input type="url" id="p_tut" data-f="tutorialUrl" value="${esc(d.tutorialUrl)}" placeholder="https://"></label>
+      <div class="link-out" id="tutOut">${tu?`<span class="pill plat">${esc(pl.name)}</span><a href="${esc(tu)}" target="_blank" rel="noopener">Open tutorial</a>`:""}</div>
+    </div>
+    <div class="sec"><h3>Pattern</h3>
+      <label class="f" for="p_pat">Pattern link<input type="url" id="p_pat" data-f="patternUrl" value="${esc(d.patternUrl)}" placeholder="https://"></label>
+      ${pu?`<div class="link-out"><a href="${esc(pu)}" target="_blank" rel="noopener">Open pattern</a></div>`:""}
+      <div class="link-out">${d.patternFile?`${String(d.patternFile.id).startsWith("data:")?`<img class="pat-img" src="${esc(d.patternFile.id)}" alt="${esc(d.patternFile.name||"Pattern")}">`:`<a href="/_blob/${esc(d.patternFile.id)}" target="_blank" rel="noopener">${esc(d.patternFile.name||"Pattern file")}</a>`}<button class="btn small danger" type="button" data-act="rmPatFile">Remove file</button>`:""}
+        ${assets?`<label class="btn small" for="p_patfile">${d.patternFile?"Replace":"Attach"} PDF or image<input class="sr" type="file" id="p_patfile" accept="application/pdf,image/*"></label>`:`<span class="meta">Attaching files works when you open this page in Claude as its owner.</span>`}</div>
+      <label class="f" for="p_pattext">Written pattern or chart notes<textarea id="p_pattext" data-f="patternText" placeholder="R1: ch 30, sc in 2nd ch from hook…">${esc(d.patternText)}</textarea></label>
+    </div>
+    <div class="sec"><h3>Row counter</h3>
+      <div class="counter"><button type="button" data-act="rowMinus" aria-label="Previous row">−</button>
+        <div><div class="num" id="rowNum">${num(d.rowCount)}</div><div class="of" id="rowOf">${num(d.rowTotal)?`of ${num(d.rowTotal)} rows`:"rows done"}</div></div>
+        <button type="button" class="plus" data-act="rowPlus" aria-label="Next row">+</button></div>
+      <div class="row"><label class="f" for="p_rowtotal" style="flex:1">Total rows in pattern<input type="number" min="0" id="p_rowtotal" data-f="rowTotal" value="${esc(d.rowTotal)}"></label>
+        <button class="btn small" type="button" data-act="rowReset" style="align-self:flex-end">Reset</button></div>
+      <p class="meta" style="margin:0">${d._new?"The count saves when you save the project.":"The count saves as you tap. The screen stays on while you count."}</p>
+    </div>
+    <div class="sec"><h3>Photos</h3>
+      <div class="photos">${(d.photos||[]).map((id,i)=>`<div class="photo"><img src="${esc(blobSrc(id))}" alt="Project photo ${i+1}"><button type="button" aria-label="Remove photo" data-rmphoto="${i}">×</button></div>`).join("")}</div>
+      ${assets?`<label class="btn small" for="p_photo" style="justify-self:start">+ Add photos<input class="sr" type="file" id="p_photo" accept="image/*" multiple></label>`:`<span class="meta">Photo uploads work when you open this page in Claude as its owner.</span>`}
+    </div>
+    <div class="sec"><div class="fields">
+      <label class="f" for="p_cost">Total cost<input type="number" min="0" step="0.01" id="p_cost" data-f="cost" value="${esc(d.cost)}"></label>
+      <label class="f" for="p_hours">Hours spent<input type="number" min="0" step="0.25" id="p_hours" data-f="hours" value="${esc(d.hours)}"></label>
+    </div>
+      <label class="f" for="p_notes">Notes (changes you made, sizing, who it's for)<textarea id="p_notes" data-f="notes">${esc(d.notes)}</textarea></label>
+    </div>
+    ${d._new?"":`<div class="sec"><div><button class="btn danger" type="button" data-act="delete">Delete project</button></div></div>`}`;
+  }
+  const scroll=$(".sheet")?$(".sheet").scrollTop:0;
+  $("#sheetRoot").innerHTML=`<div class="scrim" data-act="scrim"><div class="sheet" role="dialog" aria-modal="true" aria-labelledby="sheetTitle">${html}</div></div>`;
+  $(".sheet").scrollTop=scroll;
+}
+function updateRowUI(){const n=$("#rowNum");if(n)n.textContent=num(draft.rowCount);const o=$("#rowOf");if(o)o.textContent=num(draft.rowTotal)?`of ${num(draft.rowTotal)} rows`:"rows done"}
+function bumpRow(delta){
+  draft.rowCount=delta===0?0:Math.max(0,num(draft.rowCount)+delta); updateRowUI();
+  if(!wake&&navigator.wakeLock)navigator.wakeLock.request("screen").then(w=>wake=w).catch(()=>{});
+  if(!db&&!draft._new&&state.projects[draft.id]){const id=draft.id,val=draft.rowCount;clearTimeout(rowTimer);rowTimer=setTimeout(()=>{if(state.projects[id]){state.projects[id].rowCount=val;lsSave()}},400);return}
+  if(draft._new||!db||!state.projects[draft.id])return;
+  const id=draft.id,val=draft.rowCount; clearTimeout(rowTimer);
+  rowTimer=setTimeout(()=>db.collection("projects").doc(id).update({rowCount:val,updatedAt:Date.now()}).catch(()=>toast("Row count didn't save. Tap Save.")),700);
+}
+async function upload(file){
+  try{const r=await assets.upload(file);return r.id}
+  catch(e){toast(e.code==="local_pdf"?"PDFs can't be stored on this device. Put the PDF's web link in Pattern link instead.":e.code==="too_large"?"That file is over 20 MB.":e.code==="unsupported_type"?"Use a PDF or an image.":"Upload failed ("+(e.code||"error")+").");return null}
+}
+let armed=null;
+function arm(btn,key,label){if(armed===key){armed=null;return true}armed=key;btn.classList.add("armed");btn.textContent=label;setTimeout(()=>{if(armed===key){armed=null;btn.classList.remove("armed");btn.textContent=btn.dataset.orig||btn.textContent}},4000);return false}
+
+/* ---------- events ---------- */
+document.addEventListener("click",async e=>{
+  const t=e.target.closest("[data-tab],[data-filter],[data-wiz],[data-pick-tech],[data-open],[data-edit-yarn],[data-skein],[data-act],[data-rmyarn],[data-rmphoto]");
+  if(!t)return;
+  if(t.dataset.tab){state.tab=t.dataset.tab;render();return}
+  if(t.dataset.filter){state.filter=t.dataset.filter;render();return}
+  if(t.dataset.wiz){const w=state.wiz;if(t.dataset.wiz==="item"){const k=$("#kw");if(k)w.kw=k.value.trim()}
+    w[t.dataset.wiz]=t.dataset.val;w.step=w.step>=3||w._edit?4:w.step+1;w._edit=false;goStep();return}
+  if(t.dataset.pickTech){draft.technique=t.dataset.pickTech;document.querySelectorAll("[data-pick-tech]").forEach(b=>b.setAttribute("aria-pressed",String(b.dataset.pickTech===draft.technique)));return}
+  if(t.dataset.act==="wizBack"){state.wiz.step=Math.max(1,state.wiz.step-1);state.wiz._edit=false;goStep();return}
+  if(t.dataset.act==="wizNext"){const w=state.wiz;w.kw=($("#kw")?.value||"").trim();if(!w.item)w.item="any";w.step=w._edit?4:3;w._edit=false;goStep();return}
+  if(t.dataset.act==="wizEdit"){state.wiz.step=+t.dataset.step;state.wiz._edit=true;goStep();return}
+  if(t.dataset.act==="wizRestart"){state.wiz={step:1,tech:null,item:null,level:null,kw:""};goStep();return}
+  if(t.dataset.open){openProject(t.dataset.open);return}
+  if(t.dataset.editYarn){openYarn(t.dataset.editYarn);return}
+  if(t.dataset.skein){const s=clone(state.stash[t.dataset.skein]);s.skeins=Math.max(0,num(s.skeins)+num(t.dataset.d));await write("stash",s.id,s);return}
+  if(t.dataset.rmyarn){draft.yarns.splice(+t.dataset.rmyarn,1);renderSheet();return}
+  if(t.dataset.rmphoto){draft.photos.splice(+t.dataset.rmphoto,1);renderSheet();return}
+  const a=t.dataset.act;
+  if(a==="scrim"&&e.target===t){closeSheet();return}
+  if(a==="close"){closeSheet();return}
+  if(a==="new"){openProject();return}
+  if(a==="newYarn"){openYarn();return}
+  if(a==="addYarnLine"){draft.yarns.push({color:"",hex:"#e8dcc8",fiber:draft.yarns[0]?.fiber||"Acrylic",weight:draft.yarns[0]?.weight||WEIGHTS[4],brand:"",skeins:1,yards:""});renderSheet();return}
+  if(a==="rowPlus"){bumpRow(1);return}
+  if(a==="rowMinus"){bumpRow(-1);return}
+  if(a==="rowReset"){t.dataset.orig="Reset";if(arm(t,"reset","Tap again to reset"))bumpRow(0);return}
+  if(a==="rmPatFile"){draft.patternFile=null;renderSheet();return}
+  if(a==="save"){
+    const d=clone(draft); delete d._new; delete d.example;
+    if(draftKind==="project"&&!String(d.name||"").trim()){toast("Give the project a name first.");$("#p_name")?.focus();return}
+    if(draftKind==="yarn"&&!String(d.color||"").trim()){toast("Give the yarn a color name first.");$("#y_color")?.focus();return}
+    clearTimeout(rowTimer);
+    if(await write(draftKind==="yarn"?"stash":"projects",d.id,d)){toast("Saved");closeSheet()}
+    return}
+  if(a==="delete"){t.dataset.orig=t.textContent;if(!arm(t,"del","Tap again to delete"))return;
+    await remove(draftKind==="yarn"?"stash":"projects",draft.id);toast("Deleted");closeSheet();return}
+  if(a==="delExamples"){t.dataset.orig="Delete examples";if(!arm(t,"ex","Tap again to delete examples"))return;
+    for(const p of Object.values(state.projects).filter(x=>x.example))await remove("projects",p.id);
+    for(const s of Object.values(state.stash).filter(x=>x.example))await remove("stash",s.id);
+    toast("Examples deleted");return}
+  if(a==="quickAdd"){
+    const u=safeUrl($("#qaUrl").value), n=$("#qaName").value.trim();
+    if(!u){toast("Paste a link that starts with https://");return}
+    const pl=platform(u), social=["TikTok","YouTube","Facebook","Pinterest","Instagram"].includes(pl.name);
+    const p=blankProject({name:n||$("#qaName").dataset.def||(pl.name+" find"),technique:state.wiz.tech||"other"});
+    if(social)p.tutorialUrl=u; else p.patternUrl=u;
+    if(await write("projects",p.id,p)){toast("Added to your wishlist");$("#qaUrl").value="";$("#qaName").value=""}
+    return}
+});
+document.getElementById("newBtn").addEventListener("click",()=>state.tab==="stash"?openYarn():openProject());
+document.addEventListener("input",e=>{
+  const t=e.target;
+  if(t.id==="q"){state.q=t.value;state._qFocus=true;clearTimeout(state._qt);state._qt=setTimeout(()=>{render();state._qFocus=false},350);return}
+  if(!draft)return;
+  if(t.dataset.f){draft[t.dataset.f]=t.type==="number"?t.value:t.value;
+    if(t.dataset.f==="rowTotal")updateRowUI();
+    if(t.dataset.f==="tutorialUrl"){const u=safeUrl(t.value),pl=platform(t.value);$("#tutOut").innerHTML=u?`<span class="pill plat">${esc(pl.name)}</span><a href="${esc(u)}" target="_blank" rel="noopener">Open tutorial</a>`:""}
+    return}
+  if(t.dataset.y!=null){draft.yarns[+t.dataset.y][t.dataset.k]=t.value}
+});
+document.addEventListener("change",async e=>{
+  const t=e.target; if(!draft||!assets)return;
+  if(t.id==="p_photo"&&t.files.length){toast("Uploading…");for(const f of t.files){const id=await upload(f);if(id)draft.photos=(draft.photos||[]).concat(id)}renderSheet()}
+  if(t.id==="p_patfile"&&t.files[0]){toast("Uploading…");const f=t.files[0],id=await upload(f);if(id){draft.patternFile={id,name:f.name};renderSheet()}}
+});
+document.addEventListener("keydown",e=>{
+  if(e.key==="Escape"&&draft)closeSheet();
+  if(e.key==="Enter"&&e.target.id==="kw"){e.preventDefault();document.querySelector('[data-act="wizNext"]')?.click()}
+});
+function goStep(){render();const m=$("#tabs");if(m&&m.getBoundingClientRect().top<0)m.scrollIntoView({block:"start",behavior:matchMedia("(prefers-reduced-motion: reduce)").matches?"auto":"smooth"})}
+document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible"&&wake&&draft)navigator.wakeLock?.request("screen").then(w=>wake=w).catch(()=>{})});
+init();
+</script>
+<script>
+/* ================= Make a pattern from a photo ================= */
+const CHART_TYPES=[
+ {id:"c2c",name:"C2C",d:"Diagonal tiles, great for blankets",art:"c2c",tech:"c2c"},
+ {id:"tapestry",name:"Tapestry",d:"Single crochet, colors carried",art:"tapestry",tech:"tapestry"},
+ {id:"graphghan",name:"Graphghan",d:"One square per stitch",art:"graphghan",tech:"tapestry"},
+ {id:"mosaic",name:"Mosaic (2 colors)",d:"Two-color chart to adapt for mosaic",art:"mosaic",tech:"mosaic"},
+ {id:"filet",name:"Filet",d:"Filled and open mesh squares",art:"filet",tech:"filet"}
+];
+const WRITTEN_TYPES=[
+ {id:"amigurumi",name:"Amigurumi",d:"Toys and plushies",art:"toy",tech:"amigurumi"},
+ {id:"granny",name:"Granny square",d:"Squares and motifs",art:"granny",tech:"granny"},
+ {id:"garment",name:"Garment",d:"Tops, cardigans, sweaters",art:"top",tech:"garment"},
+ {id:"bag",name:"Bag",d:"Totes, pouches, purses",art:"bag",tech:"other"},
+ {id:"hat",name:"Hat",d:"Beanies and bucket hats",art:"hat",tech:"other"},
+ {id:"other",name:"Something else",d:"Describe it in the notes",art:"other",tech:"other"}
+];
+ART.graphghan=()=>{let p="";for(let i=0;i<=20;i++)p+=`M${i*10} 0V150`;for(let j=0;j<=15;j++)p+=`M0 ${j*10}H200`;
+  return cells(20,15,10,(x,y)=>{const nx=(x-9.5)/4.5,ny=(6.5-y)/4.5,v=Math.pow(nx*nx+ny*ny-1,3)-nx*nx*ny*ny*ny;return v<=0?C.berry:((x+y)%2?C.cream:C.white)})+`<path d="${p}" stroke="${C.ink}" stroke-opacity=".15"/>`};
+const SUGGEST_HOOK=["2.0 mm","2.75 mm (C-2)","3.5 mm (E-4)","4.0 mm (G-6)","5.0 mm (H-8)","6.5 mm (K-10½)","9.0 mm (M/N-13)","12 mm+"];
+const NAMED=[["White","#f7f7f2"],["Cream","#efe3c8"],["Beige","#d9c3a0"],["Tan","#b8956a"],["Brown","#6e4a2e"],["Dark brown","#3e2a1c"],["Black","#1d1b1e"],["Charcoal","#3d3c40"],["Grey","#8c8a90"],["Silver","#c7c6cb"],["Red","#c0282d"],["Burgundy","#7a1f2b"],["Pink","#ec8fae"],["Blush","#f2c4c8"],["Rose","#c9637a"],["Coral","#f07a62"],["Orange","#e9822b"],["Rust","#b5542a"],["Mustard","#d1a334"],["Yellow","#f2d43c"],["Sage","#9db59a"],["Green","#3f8f4a"],["Olive","#77783a"],["Forest green","#2f5d46"],["Mint","#b6e2c9"],["Teal","#24857f"],["Sky blue","#8cc2dd"],["Blue","#2f6db5"],["Navy","#25335c"],["Lilac","#b9a3d6"],["Purple","#6b3f99"],["Lavender","#d8cdf0"]];
+const OPS={mr:[0,1],ch:[0,1],sc:[1,1],hdc:[1,1],dc:[1,1],tr:[1,1],slst:[1,1],blo:[1,1],flo:[1,1],cl:[1,1],inc:[1,2],dec:[2,1],invdec:[2,1],sk:[1,0]};
+state.make={step:1,img:null,url:"",type:null,w:40,k:4,smooth:true,invert:false,weight:WEIGHTS[4],skein:200,chart:null,_key:"",size:"",hook:"",details:"",style:true,result:null,busy:false,status:"",err:"",fixing:null};
+let sampleFn=null,canImg=false,genCtl=null,fixCtl=null;
+if(window.claude&&typeof window.claude.use==="function"){
+  window.claude.use("sample").then(async s=>{sampleFn=s;if(s){const l=await s.limits().catch(()=>null);canImg=!!(l&&l.images)}if(state.tab==="make")render()}).catch(()=>{});
+}
+
+/* ---- color + image helpers ---- */
+const WGT=[2,4,3];
+const dist=(a,b)=>WGT[0]*(a[0]-b[0])**2+WGT[1]*(a[1]-b[1])**2+WGT[2]*(a[2]-b[2])**2;
+function nearestIdx(p,cs){let bi=0,bd=Infinity;for(let i=0;i<cs.length;i++){const d=dist(p,cs[i]);if(d<bd){bd=d;bi=i}}return bi}
+const toHex=c=>"#"+c.map(v=>Math.max(0,Math.min(255,Math.round(v))).toString(16).padStart(2,"0")).join("");
+const fromHex=h=>[1,3,5].map(i=>parseInt(h.slice(i,i+2),16));
+const safeHex=h=>/^#[0-9a-f]{6}$/i.test(String(h||""))?h:"#cccccc";
+function colorName(h){const c=fromHex(h);let best=NAMED[0],bd=Infinity;for(const n of NAMED){const d=dist(c,fromHex(n[1]));if(d<bd){bd=d;best=n}}return best[0]}
+function paletteNames(pal){const seen={};return pal.map((h,i)=>{let n=colorName(h);seen[n]=(seen[n]||0)+1;if(seen[n]>1)n+=" "+seen[n];return{hex:h,name:n,letter:"ABCDEFGH"[i]}})}
+function kmeans(px,k){
+  const mean=[0,1,2].map(j=>px.reduce((a,p)=>a+p[j],0)/px.length);
+  const cs=[px[nearestIdx(mean,px)].slice()],md=px.map(p=>dist(p,cs[0]));
+  while(cs.length<k){let bi=0;for(let i=1;i<px.length;i++)if(md[i]>md[bi])bi=i;if(md[bi]===0)break;cs.push(px[bi].slice());const last=cs[cs.length-1];for(let i=0;i<px.length;i++)md[i]=Math.min(md[i],dist(px[i],last))}
+  for(let it=0;it<14;it++){const sum=cs.map(()=>[0,0,0,0]);for(const p of px){const s=sum[nearestIdx(p,cs)];s[0]+=p[0];s[1]+=p[1];s[2]+=p[2];s[3]++}
+    let moved=false;sum.forEach((s,j)=>{if(s[3]){const n=[s[0]/s[3],s[1]/s[3],s[2]/s[3]];if(dist(n,cs[j])>1)moved=true;cs[j]=n}});if(!moved)break}
+  return cs;
+}
+function despeckle(cl,W,H){const out=cl.slice();for(let y=0;y<H;y++)for(let x=0;x<W;x++){const i=y*W+x,c=cl[i],nb=[];if(x>0)nb.push(cl[i-1]);if(x<W-1)nb.push(cl[i+1]);if(y>0)nb.push(cl[i-W]);if(y<H-1)nb.push(cl[i+W]);if(nb.includes(c))continue;const t={};nb.forEach(n=>t[n]=(t[n]||0)+1);let best=null,bn=0;for(const n in t)if(t[n]>bn){bn=t[n];best=+n}if(bn>=Math.min(3,nb.length))out[i]=best}return out}
+function computeChart(){
+  const m=state.make,img=m.img;if(!img)return null;
+  const key=[m.w,m.k,m.smooth,m.invert,m.type,m.url].join("|");if(m.chart&&m._key===key)return m.chart;
+  const k=(m.type==="filet"||m.type==="mosaic")?2:m.k, rowF=(m.type==="tapestry"||m.type==="mosaic")?1.15:1;
+  const W=m.w,H=Math.max(2,Math.min(220,Math.round(W*img.naturalHeight/img.naturalWidth*rowF)));
+  let src=img,sw=img.naturalWidth,sh=img.naturalHeight;
+  while(sw/2>W*2&&sh/2>H*2){const t=document.createElement("canvas");t.width=Math.round(sw/2);t.height=Math.round(sh/2);const tc=t.getContext("2d");tc.imageSmoothingQuality="high";tc.drawImage(src,0,0,t.width,t.height);src=t;sw=t.width;sh=t.height}
+  const cv=document.createElement("canvas");cv.width=W;cv.height=H;const cx=cv.getContext("2d",{willReadFrequently:true});cx.imageSmoothingQuality="high";cx.drawImage(src,0,0,W,H);
+  const d=cx.getImageData(0,0,W,H).data,px=[];for(let i=0;i<W*H;i++){const a=d[i*4+3]/255;px.push([d[i*4]*a+255*(1-a),d[i*4+1]*a+255*(1-a),d[i*4+2]*a+255*(1-a)])}
+  const cs=kmeans(px,k);let cl=px.map(p=>nearestIdx(p,cs));if(m.smooth)cl=despeckle(cl,W,H);
+  const cnt=new Array(cs.length).fill(0);cl.forEach(c=>cnt[c]++);
+  const order=[...cnt.keys()].filter(i=>cnt[i]>0).sort((a,b)=>cnt[b]-cnt[a]),re={};order.forEach((o,i)=>re[o]=i);
+  const ch={W,H,type:m.type,cells:cl.map(c=>re[c]),pal:order.map(o=>toHex(cs[o]))};
+  ch.filled=m.type==="filet"?(m.invert?0:Math.min(1,ch.pal.length-1)):-1;
+  m.chart=ch;m._key=key;return ch;
+}
+function runs(arr){const out=[];let c=arr[0],n=0;for(const v of arr){if(v===c)n++;else{out.push([c,n]);c=v;n=1}}out.push([c,n]);return out}
+function chartLines(ch){
+  const L=[],row=r=>ch.cells.slice((ch.H-r)*ch.W,(ch.H-r+1)*ch.W),fmt=(a,lab)=>runs(a).map(([c,n])=>`${n} ${lab(c)}`).join(", "),letter=c=>"ABCDEFGH"[c];
+  if(ch.type==="c2c"){
+    L.push(`Start at the bottom-left corner. Each square is one C2C tile (ch 6, 3 dc). Increase at both edges until the piece is ${ch.W} tiles along the bottom and ${ch.H} tiles up the side. When you reach an edge, decrease on that edge and keep increasing on the other, then decrease on both edges to finish. Letters are colors.`);
+    for(let d=0;d<ch.W+ch.H-1;d++){const t=[];for(let x=Math.max(0,d-ch.H+1);x<=Math.min(d,ch.W-1);x++){const yb=d-x;t.push(ch.cells[(ch.H-1-yb)*ch.W+x])}
+      const up=d%2===0,seq=up?t.slice().reverse():t;L.push(`Diagonal ${d+1} (${seq.length} tile${seq.length>1?"s":""}, ${up?"bottom to top":"top to bottom"}): ${fmt(seq,letter)}`)}
+  } else if(ch.type==="filet"){
+    L.push(`Each square is one filet block: filled = dc, 2 dc; open = dc, ch 2. Chain ${ch.W*3} for the squares plus your usual turning chain. Odd rows read right to left, even rows left to right.`);
+    for(let r=1;r<=ch.H;r++){let a=row(r);if(r%2)a=a.slice().reverse();L.push(`Row ${r}: ${fmt(a,c=>c===ch.filled?"filled":"open")}`)}
+  } else {
+    L.push(ch.type==="mosaic"
+      ?`Two-color picture chart. In overlay mosaic a square can only show the other color by dropping a dc into the row below, so some squares may need adjusting. Ch ${ch.W+1}; each square is 1 sc. Odd rows read right to left, even rows left to right.`
+      :`Ch ${ch.W+1}. Row 1: sc in 2nd ch from hook and across (${ch.W} sc), changing colors as charted. Each square is 1 sc. Odd rows read right to left, even rows left to right. ${ch.type==="tapestry"?"Carry unused colors inside your stitches.":"Use a separate bobbin for each color block."}`);
+    for(let r=1;r<=ch.H;r++){let a=row(r);if(r%2)a=a.slice().reverse();L.push(`Row ${r}: ${fmt(a,letter)}`)}
+  }
+  return L;
+}
+function estimate(ch){
+  const wi=Math.max(0,WEIGHTS.indexOf(state.make.weight)),f=[.45,.55,.7,.85,1,1.35,1.7,2.2][wi],sz=[.45,.55,.7,.85,1,1.3,1.7,2.2][wi];
+  const cnt=ch.pal.map((_,i)=>ch.cells.reduce((a,c)=>a+(c===i),0));let yards;
+  if(ch.type==="filet"){const filled=cnt[ch.filled]||0,open=ch.W*ch.H-filled;yards=[(filled*.38+open*.22)*f*1.1]}
+  else{const per={c2c:.5,tapestry:.15,graphghan:.11,mosaic:.15}[ch.type]||.12;yards=cnt.map(n=>n*per*f*1.1)}
+  const unit={c2c:1,filet:.6}[ch.type]||.25,rowH={c2c:1,filet:.6}[ch.type]||.22;
+  return{yards,cnt,wIn:ch.W*unit*sz,hIn:ch.H*rowH*sz,hook:SUGGEST_HOOK[wi]};
+}
+function drawChart(cv,ch,exp){
+  const cs=getComputedStyle(document.documentElement),tok=(n,d)=>exp?d:(cs.getPropertyValue(n).trim()||d);
+  const ink=tok("--ink","#222"),muted=tok("--muted","#888"),surf=tok("--surface","#fff");
+  const cell=exp?Math.max(10,Math.min(24,Math.floor(1600/ch.W))):Math.max(5,Math.min(18,Math.floor(760/ch.W)));
+  const mR=30,mB=20,dpr=exp?1:Math.min(2,window.devicePixelRatio||1),w=ch.W*cell+mR,h=ch.H*cell+mB;
+  cv.width=w*dpr;cv.height=h*dpr;if(!exp){cv.style.width=w+"px";cv.style.height=h+"px"}
+  const x=cv.getContext("2d");x.scale(dpr,dpr);x.fillStyle=surf;x.fillRect(0,0,w,h);
+  for(let r=0;r<ch.H;r++)for(let c=0;c<ch.W;c++){const v=ch.cells[r*ch.W+c];x.fillStyle=ch.type==="filet"?(v===ch.filled?ink:surf):ch.pal[v];x.fillRect(c*cell,r*cell,cell,cell)}
+  x.strokeStyle=muted;
+  if(cell>=7||ch.type==="filet"){x.globalAlpha=.35;x.lineWidth=1;x.beginPath();for(let c=0;c<=ch.W;c++){x.moveTo(c*cell+.5,0);x.lineTo(c*cell+.5,ch.H*cell)}for(let r=0;r<=ch.H;r++){x.moveTo(0,r*cell+.5);x.lineTo(ch.W*cell,r*cell+.5)}x.stroke()}
+  x.globalAlpha=.9;x.lineWidth=1.5;x.beginPath();for(let c=ch.W;c>=0;c-=10){x.moveTo(c*cell,0);x.lineTo(c*cell,ch.H*cell)}for(let r=ch.H;r>=0;r-=10){x.moveTo(0,r*cell);x.lineTo(ch.W*cell,r*cell)}x.stroke();x.globalAlpha=1;
+  x.fillStyle=muted;x.font="10px ui-monospace, Consolas, monospace";x.textBaseline="middle";
+  const step=ch.H>60?10:5;for(let n=1;n<=ch.H;n++)if(n===1||n%step===0)x.fillText(String(n),ch.W*cell+4,(ch.H-n)*cell+cell/2);
+  x.textBaseline="top";for(let n=10;n<=ch.W;n+=10)x.fillText(String(n),(ch.W-n)*cell+2,ch.H*cell+5);
+}
+function toJpeg(img,max=1568){const s=Math.min(1,max/Math.max(img.naturalWidth,img.naturalHeight)),cv=document.createElement("canvas");cv.width=Math.round(img.naturalWidth*s);cv.height=Math.round(img.naturalHeight*s);const c=cv.getContext("2d");c.fillStyle="#fff";c.fillRect(0,0,cv.width,cv.height);c.drawImage(img,0,0,cv.width,cv.height);return new Promise(r=>cv.toBlob(r,"image/jpeg",.9))}
+
+/* ---- view ---- */
+function stylePatterns(){return Object.values(state.projects).filter(p=>!p.example&&String(p.patternText||"").trim().length>60).slice(0,3)}
+function viewMake(){
+  const m=state.make;
+  const head=(q,sub)=>`<div class="wiz-top"><span class="eyebrow">Step ${m.step} of 3</span>${m.step>1?`<button class="btn small" type="button" data-act="mkBack">← Back</button>`:""}</div>
+    <div class="steps" aria-hidden="true">${[1,2,3].map(i=>`<i class="${i<=m.step?"on":""}"></i>`).join("")}</div><h2 class="q">${q}</h2>${sub?`<p class="meta sub">${sub}</p>`:""}`;
+  const bar=m.url?`<div class="photo-bar"><img src="${m.url}" alt="Your photo"><div><b>Your photo</b><div class="meta mono">${m.img.naturalWidth} × ${m.img.naturalHeight} px</div></div><button class="btn small" type="button" data-act="mkChangePhoto">Change photo</button></div>`:"";
+  const err=m.err?`<div class="note">${esc(m.err)}</div>`:"";
+  if(m.step===1||!m.img)return `<section class="wiz">${head("Upload a photo to turn into a pattern","A finished piece you love, or any picture you'd like as colorwork: a pet, a logo, a drawing.")}
+    <label class="drop" id="drop" for="mkFile"><span class="art">${art("lv_any")}</span><span class="drop-cap"><b>Choose a photo</b><small>or drop it here · JPG, PNG or WebP</small></span><input class="sr" type="file" id="mkFile" accept="image/*"></label>
+    ${err}<div class="tips"><div><b>For written patterns</b><span>One item, plain background, good light. Describe hidden sides in the notes.</span></div><div><b>For picture charts</b><span>Simple shapes and strong colors chart best. Crop close to the subject first.</span></div></div></section>`;
+  if(m.step===2)return `<section class="wiz">${head("What kind of pattern do you want?","")}${bar}
+    <h3 style="margin-top:6px">Picture charts <span class="tag ok">Exact · from your photo's colors</span></h3>
+    <div class="tiles">${CHART_TYPES.map(t=>tile({attrs:`data-mk-type="${t.id}"`,art:art(t.art),name:t.name,d:t.d,pressed:m.type===t.id})).join("")}</div>
+    <h3 style="margin-top:12px">Written patterns <span class="tag warn">AI draft · test as you go</span></h3>
+    ${sampleFn&&canImg?"":`<div class="note">${state.local?"Written patterns use Claude to read your photo, so they only work in the Claude version of this app. Picture charts work here.":"Written patterns have Claude look at your photo, so they work only when this page is open in Claude and you're signed in."}</div>`}
+    <div class="tiles">${WRITTEN_TYPES.map(t=>tile({attrs:`data-mk-type="${t.id}"`,art:art(t.art),name:t.name,d:t.d,pressed:m.type===t.id})).join("")}</div></section>`;
+  const ct=CHART_TYPES.find(t=>t.id===m.type);
+  if(ct){const unit=m.type==="c2c"?"tiles":m.type==="filet"?"squares":"stitches";
+    return `<section class="wiz">${head(`Your ${ct.name} chart`,"Adjust the size and colors. The chart updates as you go.")}${bar}
+    <div class="panel" style="margin-top:0">
+      <label class="f" for="mkW"><span>Width: <span id="mkWv" class="mono">${m.w}</span> ${unit}</span><input type="range" id="mkW" min="10" max="${m.type==="c2c"?120:150}" value="${m.w}"></label>
+      ${m.type==="filet"||m.type==="mosaic"?"":`<label class="f" for="mkK"><span>Colors: <span id="mkKv" class="mono">${m.k}</span></span><input type="range" id="mkK" min="2" max="8" value="${m.k}"></label>`}
+      <div class="fields"><label class="f" for="mkWeight">Yarn weight<select id="mkWeight">${opt(WEIGHTS,m.weight)}</select></label>
+        <label class="f" for="mkSkein">Yards per skein<input type="number" id="mkSkein" min="20" value="${m.skein}"></label></div>
+      <div class="row"><label class="check" for="mkSmooth"><input type="checkbox" id="mkSmooth" ${m.smooth?"checked":""}> Clean up single stray stitches</label>
+        ${m.type==="filet"?`<button class="btn small" type="button" data-act="mkInvert">Swap filled and open</button>`:""}</div>
+    </div><div id="chartArea"></div></section>`}
+  const wt=WRITTEN_TYPES.find(t=>t.id===m.type)||WRITTEN_TYPES[5],sp=stylePatterns().length;
+  if(m.result)return `<section class="wiz">${head(`Your ${wt.name.toLowerCase()} pattern`,"")}${bar}${renderPattern()}</section>`;
+  return `<section class="wiz">${head(`Your ${wt.name.toLowerCase()} pattern`,"Tell Claude what you want, then it writes an original pattern from your photo.")}${bar}
+    <div class="panel" style="margin-top:0">
+      <div class="fields">
+        <label class="f" for="mkSize">Finished size (optional)<input type="text" id="mkSize" data-m="size" value="${esc(m.size)}" placeholder="e.g. 20 cm tall, adult medium"></label>
+        <label class="f" for="mkWeight2">Yarn weight<select id="mkWeight2" data-m="weight">${opt(WEIGHTS,m.weight)}</select></label>
+        <label class="f" for="mkHook">Hook<select id="mkHook" data-m="hook"><option value="">Let Claude choose</option>${opt(HOOKS,m.hook)}</select></label>
+      </div>
+      <label class="f" for="mkDetails">Anything else Claude should know?<textarea id="mkDetails" data-m="details" placeholder="e.g. the back has a pom-pom tail; make the ears floppy; use only 3 colors">${esc(m.details)}</textarea></label>
+      ${sp?`<label class="check" for="mkStyle"><input type="checkbox" id="mkStyle" ${m.style?"checked":""}> Match the wording of my ${sp} saved pattern${sp>1?"s":""}</label>`:""}
+      <div class="row"><button class="btn primary" type="button" data-act="mkGen" ${m.busy?"disabled":""}>${m.busy?"Writing…":"Write my pattern"}</button>${m.busy?`<button class="btn" type="button" data-act="mkStop">Stop</button>`:""}<span class="meta" id="genStatus" aria-live="polite">${esc(m.status)}</span></div>
+      <p class="meta" style="margin:0">Uses your own Claude account. It usually takes one to three minutes.</p>${err}
+    </div></section>`;
+}
+function afterMakeRender(){const m=state.make;if(m.step===3&&CHART_TYPES.some(t=>t.id===m.type))refreshChart()}
+function refreshChart(){
+  const a=$("#chartArea"),m=state.make;if(!a)return;const ch=computeChart();if(!ch){a.innerHTML="";return}
+  const e=estimate(ch),names=paletteNames(ch.pal),lines=chartLines(ch),unit=ch.type==="c2c"?"tiles":ch.type==="filet"?"squares":"stitches",rowsN=ch.type==="c2c"?ch.W+ch.H-1:ch.H;
+  const sk=y=>{const n=Math.max(1,Math.ceil(y/m.skein));return `${n} skein${n>1?"s":""}`};
+  const yarn=ch.type==="filet"
+    ?`<div class="li"><span class="sw" style="background-color:#f4efe6"></span><div><div class="t">Thread or yarn, one color</div><div class="meta"><span class="mono">${e.cnt[ch.filled]||0} filled · ${ch.W*ch.H-(e.cnt[ch.filled]||0)} open</span></div></div><div class="buy"><b>${sk(e.yards[0])}</b><div class="meta">~${Math.round(e.yards[0])} yd</div></div></div>`
+    :names.map((n,i)=>`<div class="li"><span class="sw" style="background-color:${n.hex}"></span><div style="min-width:0"><div class="t">${n.letter} · ${esc(n.name)}</div><div class="meta"><span class="mono">${e.cnt[i]} ${unit}</span><span class="mono">${n.hex}</span></div></div><div class="buy"><b>${sk(e.yards[i])}</b><div class="meta">~${Math.round(e.yards[i])} yd</div></div></div>`).join("");
+  a.innerHTML=`<div class="chart-wrap"><canvas id="chartCv" role="img" aria-label="${esc(ch.W+" by "+ch.H+" chart")}"></canvas></div>
+    <div class="spec"><div><span class="meta">Chart</span><b class="mono">${ch.W} × ${ch.H}</b><span class="meta">${unit}</span></div>
+      <div><span class="meta">Finished size</span><b class="mono">${Math.round(e.wIn)}″ × ${Math.round(e.hIn)}″</b><span class="meta mono">${Math.round(e.wIn*2.54)} × ${Math.round(e.hIn*2.54)} cm</span></div>
+      <div><span class="meta">Suggested hook</span><b class="mono">${esc(e.hook)}</b></div>
+      <div><span class="meta">${ch.type==="c2c"?"Diagonals":"Rows"}</span><b class="mono">${rowsN}</b></div></div>
+    <h3 style="margin-top:12px">Yarn</h3><div class="list" style="margin-top:0">${yarn}</div>
+    <p class="meta">Yarn amounts and size are estimates. Crochet a small swatch first and adjust.</p>
+    <details class="instr"><summary>Row-by-row instructions (${rowsN} ${ch.type==="c2c"?"diagonals":"rows"})</summary><p class="meta">${esc(lines[0])}</p><ol class="rows">${lines.slice(1).map(l=>`<li>${esc(l)}</li>`).join("")}</ol></details>
+    <div class="row"><button class="btn primary" type="button" data-act="mkSave">Save as project</button></div>`;
+  drawChart($("#chartCv"),ch,false);
+}
+
+/* ---- AI written patterns ---- */
+function validate(r){let bad=0,checked=0;
+  (r.sections||[]).forEach(sec=>{let prev=null;(sec.steps||[]).forEach(st=>{st._issue="";st._ok=false;if(st.newPiece)prev=null;
+    const cnt=typeof st.count==="number"?st.count:null,ops=Array.isArray(st.ops)&&st.ops.length?st.ops:null;
+    if(ops){let use=0,make=0,ok=true;for(const g of ops){const times=Number(g&&g.times)||1;for(const pr of (g&&Array.isArray(g.seq)?g.seq:[])){const e=OPS[String(pr[0]).toLowerCase()],n=Number(pr[1])||0;if(!e){ok=false;continue}use+=e[0]*n*times;make+=e[1]*n*times}}
+      if(ok){checked++;if(cnt!=null&&make!==cnt)st._issue=`These stitches add up to ${make}, but the count says ${cnt}.`;else if(prev!=null&&use>0&&use!==prev)st._issue=`This works into ${use} stitches, but the step before ends with ${prev}.`;
+        if(st._issue)bad++;else st._ok=true;prev=cnt!=null?cnt:make}else if(cnt!=null)prev=cnt}
+    else if(cnt!=null)prev=cnt})});
+  return{bad,checked}}
+function prevCount(si,i){const steps=state.make.result.sections[si].steps;if(steps[i].newPiece)return null;for(let j=i-1;j>=0;j--){if(typeof steps[j].count==="number")return steps[j].count;if(steps[j].newPiece)return null}return null}
+const cleanJSON=o=>JSON.stringify(o,(k,v)=>k.startsWith("_")?undefined:v);
+function renderPattern(){
+  const m=state.make,r=m.result,v=validate(r),list=a=>Array.isArray(a)?a.filter(Boolean):[];
+  const yarns=list(r.yarns).map(y=>{const n=Math.max(1,Math.ceil(num(y.yards)/m.skein));return `<div class="li"><span class="sw" style="background-color:${safeHex(y.hex)}"></span><div style="min-width:0"><div class="t">${esc(y.color||"Yarn")}</div><div class="meta">${esc(y.role||"")}</div></div><div class="buy"><b>${n} skein${n>1?"s":""}</b><div class="meta">~${Math.round(num(y.yards))} yd</div></div></div>`}).join("");
+  const fixForm=(si,i)=>`<div class="fix"><label class="f" for="fixNote">What went wrong? (optional)<input type="text" id="fixNote" placeholder="e.g. the head came out too small"></label>
+    <div class="row"><button class="btn small primary" type="button" data-act="mkFix" data-s="${si}" data-i="${i}" ${m.busy?"disabled":""}>${m.busy?"Rewriting…":"Rewrite this step"}</button><button class="btn small" type="button" data-act="mkFixCancel">Cancel</button></div></div>`;
+  return `<div class="draft-banner"><b>AI draft.</b> Crochet a test piece and fix any step that doesn't work. ${v.checked?(v.bad?`<b>${v.bad} of ${v.checked} checked steps don't add up.</b> Tap Fix on those.`:`All ${v.checked} checked steps add up.`):""}</div>
+  <div class="panel"><h2>${esc(r.title||"Your pattern")}</h2>${r.summary?`<p style="margin:0">${esc(r.summary)}</p>`:""}
+    <div class="spec" style="margin:4px 0"><div><span class="meta">Finished size</span><b>${esc(r.finishedSize||"—")}</b></div><div><span class="meta">Hook</span><b class="mono">${esc(r.hook||"—")}</b></div><div><span class="meta">Yarn weight</span><b>${esc(r.yarnWeight||m.weight)}</b></div><div><span class="meta">Level</span><b>${esc(r.difficulty||"—")}</b></div></div>
+    ${yarns?`<h3>Yarn</h3><div class="list" style="margin-top:0">${yarns}</div>`:""}
+    ${list(r.notions).length?`<h3>You'll also need</h3><ul class="plain-list">${list(r.notions).map(n=>`<li>${esc(n)}</li>`).join("")}</ul>`:""}
+    ${r.gauge?`<p style="margin:0"><b>Gauge:</b> ${esc(r.gauge)}</p>`:""}
+    ${list(r.abbreviations).length?`<h3>Abbreviations (US)</h3><div class="abbr">${list(r.abbreviations).map(a=>`<div><b>${esc(a.abbr)}</b> ${esc(a.meaning)}</div>`).join("")}</div>`:""}
+    ${list(r.assumptions).length?`<div class="note" style="margin:0"><b>What Claude had to guess</b><ul class="plain-list">${list(r.assumptions).map(a=>`<li>${esc(a)}</li>`).join("")}</ul></div>`:""}
+  </div>
+  ${list(r.sections).map((sec,si)=>`<div class="panel"><h2>${esc(sec.name||"Part "+(si+1))}</h2>${sec.notes?`<p class="meta" style="margin:0">${esc(sec.notes)}</p>`:""}
+    <ol class="steps-list">${list(sec.steps).map((st,i)=>`<li class="${st._issue?"bad":st._ok?"good":""}"><div class="st-head"><b>${esc(st.label||"Step "+(i+1))}</b>${typeof st.count==="number"?`<span class="mono cnt">(${st.count})</span>`:""}<span class="st-flag" ${st._issue?'aria-label="Stitch count problem"':st._ok?'aria-label="Stitch count checks out"':""}>${st._issue?"⚠":st._ok?"✓":""}</span><button class="linkbtn" type="button" data-act="mkFixOpen" data-s="${si}" data-i="${i}">Fix</button></div>
+      <div>${esc(st.text||"")}</div>${st._issue?`<div class="issue">${esc(st._issue)}</div>`:""}${st._why?`<div class="meta">Changed: ${esc(st._why)}</div>`:""}${m.fixing===si+"-"+i?fixForm(si,i):""}</li>`).join("")}</ol></div>`).join("")}
+  ${list(r.assembly).length?`<div class="panel"><h2>Finishing</h2><ol class="plain-list">${list(r.assembly).map(a=>`<li>${esc(a)}</li>`).join("")}</ol></div>`:""}
+  ${m.err?`<div class="note">${esc(m.err)}</div>`:""}
+  <div class="row" style="margin-top:6px"><button class="btn primary" type="button" data-act="mkSave">Save as project</button><button class="btn" type="button" data-act="mkRegen">Change details and try again</button></div>`;
+}
+function sampleErr(code){return({not_granted:"Claude wasn't allowed for this page. Reload and choose Allow to write patterns.",sampling_disabled:"Claude isn't available for this account.",not_declared:"AI patterns aren't available on this version of the page.",images_unavailable:"This view can't send photos to Claude. Open the page in Claude while signed in.",capability_disabled:"AI patterns aren't available here.",capability_removed:"AI patterns aren't available here.",rate_limited:"You've reached your Claude usage limit for now. Try again later.",session_expired:"Sign in to Claude again, then try again.",image_rejected:"That photo couldn't be read. Try a JPG or PNG under 20 MB.",refused:"Claude couldn't make a pattern from this photo. Try a different photo or description.",empty_completion:"Claude didn't return a pattern. Try again with a shorter description.",invalid_json:"The pattern came back incomplete. Tap the button to try again.",prompt_too_large:"That request was too long. Shorten your notes and try again."})[code]||"Something went wrong. Tap the button to try again."}
+function buildPrompt(wt){
+  const m=state.make,sp=m.style?stylePatterns():[];
+  return `You are an experienced crochet designer. The attached photo shows a crocheted ${wt.name.toLowerCase()}, or something the maker wants to crochet as one. Write an ORIGINAL crochet pattern that recreates it as closely as you can. Do not reproduce any published pattern.
+
+Maker's choices:
+- Finished size: ${m.size||"match the photo; choose a sensible size"}
+- Yarn weight: ${m.weight}
+- Hook: ${m.hook||"choose one that suits the yarn"}
+- Notes: ${m.details||"none"}
+${sp.length?"\nPatterns the maker saved, for wording and abbreviation style only. Do not copy their content:\n"+sp.map(p=>`--- ${p.name}\n${String(p.patternText).slice(0,1500)}`).join("\n")+"\n":""}
+Rules:
+- US crochet terms. Number every round or row ("Rnd 1", "Row 1"), and give each one's stitch count in "count".
+- Fill "ops" for rounds and rows of basic stitches so the stitch math can be checked: a list of {"seq": [[code, n], ...], "times": k}. Codes: "mr" (stitches worked into a magic ring), "ch" (foundation chain stitches only), "sc", "hdc", "dc", "tr", "slst", "blo", "flo", "cl" (each uses 1 stitch and makes 1), "inc" (uses 1, makes 2), "dec" (uses 2, makes 1), "sk" (skips 1, makes 0). Example: "(sc, inc) x 6" is [{"seq": [["sc",1],["inc",1]], "times": 6}] with count 18. "sc in each st around (18)" is [{"seq": [["sc",18]], "times": 1}].
+- Use "ops": null for steps where stitch math doesn't apply (chain spaces, color changes, stuffing, joining, notes).
+- Set "newPiece": true on the first step of each separately made part.
+- At most 80 steps in total. Group identical rounds, e.g. "Rnd 8-12: sc in each st around" with the ops of one round.
+- Estimate yardage per color generously.
+
+Reply with only JSON in this shape:
+{"title": string, "summary": string, "difficulty": "beginner"|"intermediate"|"advanced", "finishedSize": string, "hook": string, "yarnWeight": string, "gauge": string,
+ "yarns": [{"color": string, "hex": "#rrggbb", "role": string, "yards": number}],
+ "notions": [string], "abbreviations": [{"abbr": string, "meaning": string}],
+ "sections": [{"name": string, "notes": string, "steps": [{"label": string, "text": string, "count": number|null, "ops": [...]|null, "newPiece": boolean}]}],
+ "assembly": [string], "assumptions": [string], "confidence": "low"|"medium"|"high"}
+"assumptions" lists what you had to guess because the photo doesn't show it.`;
+}
+async function generate(){
+  const m=state.make,wt=WRITTEN_TYPES.find(t=>t.id===m.type)||WRITTEN_TYPES[5];
+  if(!sampleFn||!canImg){m.err="Written patterns need this page open in Claude while you're signed in.";render();return}
+  m.busy=true;m.err="";m.status="Looking at your photo…";render();const ctl=genCtl=new AbortController();
+  try{
+    const blob=await toJpeg(m.img);
+    const res=await sampleFn.json(buildPrompt(wt),{images:[blob],modelTier:"complex",signal:ctl.signal,cache:false,
+      onText:({text})=>{const n=(text.match(/"label"/g)||[]).length,s=$("#genStatus");if(s)s.textContent=n?`Writing… ${n} steps so far`:"Writing…"}});
+    if(!res||!Array.isArray(res.sections))throw{code:"invalid_json"};
+    m.result=res;m.fixing=null;
+  }catch(e){if(e&&e.code!=="cancelled")m.err=sampleErr(e&&e.code)}
+  finally{m.busy=false;m.status="";genCtl=null;render()}
+}
+async function fixStep(si,i,note){
+  const m=state.make,r=m.result,sec=r.sections[si],st=sec.steps[i],next=sec.steps[i+1];
+  if(!sampleFn){m.err="Fixing steps needs this page open in Claude.";render();return}
+  validate(r);const issue=st._issue,prev=prevCount(si,i);
+  m.busy=true;m.err="";render();const ctl=fixCtl=new AbortController();
+  const prompt=`You wrote this crochet pattern draft. Rewrite ONE step so it works, keeping US terms.
+Part: ${sec.name}
+Step to fix: ${cleanJSON(st)}
+Stitch count of the step before: ${prev==null?"none (first step of this part)":prev}
+${issue?"Problem found by the stitch checker: "+issue:""}
+${note?"Maker's note: "+note:""}
+Next step (should still work after your change): ${next?cleanJSON(next):"none"}
+
+Full pattern for context:
+${cleanJSON(r).slice(0,60000)}
+
+Reply with only JSON: {"label": string, "text": string, "count": number|null, "ops": [...]|null, "newPiece": boolean, "why": string}. Use the same "ops" codes as the pattern ("mr","ch","sc","hdc","dc","tr","slst","blo","flo","cl","inc","dec","sk"). "why" says in one sentence what you changed.`;
+  try{
+    const opts={modelTier:"default",signal:ctl.signal,cache:false};if(canImg)opts.images=[await toJpeg(m.img)];
+    const res=await sampleFn.json(prompt,opts);
+    if(!res||typeof res.text!=="string")throw{code:"invalid_json"};
+    sec.steps[i]={label:res.label||st.label,text:res.text,count:typeof res.count==="number"?res.count:null,ops:Array.isArray(res.ops)?res.ops:null,newPiece:!!res.newPiece,_why:res.why||""};
+    m.fixing=null;toast("Step rewritten");
+  }catch(e){if(e&&e.code!=="cancelled")m.err=sampleErr(e&&e.code)}
+  finally{m.busy=false;fixCtl=null;render()}
+}
+function formatPattern(r){const L=[r.title||"Pattern"];if(r.summary)L.push(r.summary);L.push("");
+  if(r.finishedSize)L.push("Finished size: "+r.finishedSize);if(r.hook)L.push("Hook: "+r.hook);if(r.yarnWeight)L.push("Yarn weight: "+r.yarnWeight);if(r.gauge)L.push("Gauge: "+r.gauge);
+  (r.yarns||[]).forEach(y=>L.push(`Yarn: ${y.color||""}${y.role?" ("+y.role+")":""}, about ${Math.round(num(y.yards))} yd`));
+  if((r.notions||[]).length)L.push("Also: "+r.notions.join(", "));
+  if((r.abbreviations||[]).length)L.push("Abbreviations: "+r.abbreviations.map(a=>`${a.abbr} = ${a.meaning}`).join("; "));
+  (r.sections||[]).forEach(s=>{L.push("",String(s.name||"").toUpperCase());if(s.notes)L.push(s.notes);(s.steps||[]).forEach(st=>L.push(`${st.label?st.label+": ":""}${st.text}${typeof st.count==="number"?" ("+st.count+")":""}`))});
+  if((r.assembly||[]).length){L.push("","FINISHING");r.assembly.forEach((a,i)=>L.push(`${i+1}. ${a}`))}
+  return L.join("\n")}
+async function saveMake(){
+  const m=state.make,ct=CHART_TYPES.find(t=>t.id===m.type),wt=WRITTEN_TYPES.find(t=>t.id===m.type);if(!ct&&!wt)return;
+  const p=blankProject({technique:(ct||wt).tech});p.photos=[];
+  if(assets){toast("Saving…");const ph=await upload(await toJpeg(m.img));if(ph)p.photos=[ph]}
+  if(ct){const ch=computeChart(),e=estimate(ch),names=paletteNames(ch.pal);
+    p.name=`${ct.name} chart ${ch.W}×${ch.H}`;p.hook=e.hook;p.rowTotal=ch.type==="c2c"?ch.W+ch.H-1:ch.H;
+    p.yarns=ch.type==="filet"?[{color:"Thread",hex:"#f4efe6",fiber:"Cotton",weight:m.weight,brand:"",skeins:Math.max(1,Math.ceil(e.yards[0]/m.skein)),yards:m.skein}]
+      :names.map((n,i)=>({color:n.name,hex:n.hex,fiber:"Acrylic",weight:m.weight,brand:"",skeins:Math.max(1,Math.ceil(e.yards[i]/m.skein)),yards:m.skein}));
+    p.patternText=[`${ct.name} chart, ${ch.W} × ${ch.H}, made from a photo.`,ch.type==="filet"?"":"Colors: "+names.map(n=>`${n.letter} = ${n.name}`).join(", "),"",...chartLines(ch)].join("\n");
+    if(assets){const cv=document.createElement("canvas");drawChart(cv,ch,true);const b=await new Promise(res=>cv.toBlob(res,"image/png"));const id=b&&await upload(b);if(id)p.patternFile={id,name:"Chart.png"}}
+  } else {const r=m.result;if(!r)return;const mm=parseFloat(r.hook);
+    p.name=r.title||wt.name;p.hook=HOOKS.find(h=>parseFloat(h)===mm)||m.hook||"";
+    p.yarns=(r.yarns||[]).map(y=>({color:y.color||"Yarn",hex:safeHex(y.hex),fiber:"Acrylic",weight:WEIGHTS.find(w=>w===r.yarnWeight)||m.weight,brand:"",skeins:Math.max(1,Math.ceil(num(y.yards)/m.skein)),yards:m.skein}));
+    if(!p.yarns.length)p.yarns=blankProject().yarns;
+    p.patternText=formatPattern(r);p.notes="AI draft made from a photo. Note any changes you make here.";}
+  if(await write("projects",p.id,p)){toast("Saved to your projects");state.tab="projects";state.filter="all";render();draftKind="project";draft=clone(p);draft._new=false;renderSheet()}
+}
+async function takeFile(f){
+  const m=state.make;if(f.type&&!/^image\//.test(f.type)){m.err="Choose an image file, like a JPG or PNG.";render();return}
+  const url=URL.createObjectURL(f);
+  try{const img=await new Promise((res,rej)=>{const i=new Image();i.onload=()=>res(i);i.onerror=rej;i.src=url});
+    if(m.url)URL.revokeObjectURL(m.url);Object.assign(m,{img,url,step:2,err:"",chart:null,_key:"",result:null,fixing:null});render()}
+  catch(_){URL.revokeObjectURL(url);m.err="That photo couldn't be opened. Try a JPG or PNG.";render()}
+}
+
+/* ---- events ---- */
+document.addEventListener("click",async e=>{
+  const t=e.target.closest("[data-mk-type],[data-act]");if(!t)return;const m=state.make;
+  if(t.dataset.mkType){if(m.busy)return;m.type=t.dataset.mkType;m.step=3;m.result=null;m.err="";m.fixing=null;render();goStep();return}
+  switch(t.dataset.act){
+    case "mkBack":if(m.busy)genCtl?.abort();m.step=Math.max(1,m.step-1);m.err="";render();break;
+    case "mkChangePhoto":m.step=1;m.err="";render();break;
+    case "mkInvert":m.invert=!m.invert;refreshChart();break;
+    case "mkGen":generate();break;
+    case "mkStop":genCtl?.abort();break;
+    case "mkRegen":m.result=null;m.err="";render();break;
+    case "mkSave":t.disabled=true;try{await saveMake()}finally{t.disabled=false}break;
+    case "mkFixOpen":m.fixing=t.dataset.s+"-"+t.dataset.i;m.err="";render();$("#fixNote")?.focus();break;
+    case "mkFixCancel":fixCtl?.abort();m.fixing=null;render();break;
+    case "mkFix":fixStep(+t.dataset.s,+t.dataset.i,($("#fixNote")?.value||"").trim());break;
+  }
+});
+let chartT;
+document.addEventListener("input",e=>{const t=e.target,m=state.make;
+  if(t.id==="mkW"){m.w=+t.value;$("#mkWv").textContent=m.w;clearTimeout(chartT);chartT=setTimeout(refreshChart,120)}
+  else if(t.id==="mkK"){m.k=+t.value;$("#mkKv").textContent=m.k;clearTimeout(chartT);chartT=setTimeout(refreshChart,120)}
+  else if(t.id==="mkSkein"){m.skein=Math.max(20,num(t.value)||200);clearTimeout(chartT);chartT=setTimeout(refreshChart,300)}
+  else if(t.dataset.m)m[t.dataset.m]=t.value;
+});
+document.addEventListener("change",e=>{const t=e.target,m=state.make;
+  if(t.id==="mkFile"&&t.files&&t.files[0])takeFile(t.files[0]);
+  if(t.id==="mkSmooth"){m.smooth=t.checked;refreshChart()}
+  if(t.id==="mkWeight"){m.weight=t.value;refreshChart()}
+  if(t.id==="mkStyle")m.style=t.checked;
+});
+document.addEventListener("dragover",e=>{const d=e.target.closest&&e.target.closest("#drop");if(d){e.preventDefault();d.classList.add("over")}});
+document.addEventListener("dragleave",e=>{const d=e.target.closest&&e.target.closest("#drop");if(d)d.classList.remove("over")});
+document.addEventListener("drop",e=>{const d=e.target.closest&&e.target.closest("#drop");if(d){e.preventDefault();d.classList.remove("over");const f=e.dataTransfer.files[0];if(f)takeFile(f)}});
+/* ---- backup: export / import (device-saved version) ---- */
+function exportData(){
+  const blob=new Blob([JSON.stringify({app:"crochet-project-book",version:1,exported:new Date().toISOString(),projects:state.projects,stash:state.stash})],{type:"application/json"});
+  const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=`crochet-backup-${new Date().toISOString().slice(0,10)}.json`;document.body.appendChild(a);a.click();
+  setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},1000);toast("Backup downloaded");
+}
+async function importData(file){
+  try{const d=JSON.parse(await file.text());if(!d||d.app!=="crochet-project-book"||typeof d.projects!=="object")throw 0;
+    const before=state;const np=Object.keys(d.projects||{}).length,ns=Object.keys(d.stash||{}).length;
+    Object.assign(state.projects,d.projects||{});Object.assign(state.stash,d.stash||{});
+    if(lsSave()){render();toast(`Imported ${np} project${np===1?"":"s"} and ${ns} yarn${ns===1?"":"s"}`)}}
+  catch(_){toast("That file isn't a Crochet Project Book backup.")}
+}
+document.addEventListener("click",e=>{const t=e.target.closest('[data-act="exportData"]');if(t)exportData()});
+document.addEventListener("change",e=>{if(e.target.id==="importFile"&&e.target.files[0]){importData(e.target.files[0]);e.target.value=""}});
+</script>
+</body>
+</html>
